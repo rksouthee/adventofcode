@@ -1,0 +1,7 @@
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<TARGET_FILE_DIR:aoc>/2018")
+add_solution(1)
+add_solution(2)
+add_solution(3)
+add_solution(4)
+add_solution(5)
+add_solution(6)
