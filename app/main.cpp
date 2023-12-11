@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	char** forward_argv = new char*[forward_argc + 1];
 	forward_argv[0] = exe_path_c_str;
 	for (std::size_t i = 0; i < unmatched.size(); ++i) forward_argv[i + 1] = ::_strdup(unmatched[i].c_str());
-	forward_argv[forward_argc - 1] = nullptr;
+	forward_argv[forward_argc] = nullptr;
 
 	if (result.count("run-tests"))
 	{
