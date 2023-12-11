@@ -90,7 +90,6 @@ SOLVE
 	std::optional<std::size_t> opt_value;
 	if (argc > 1)
 	{
-		std::cout << "Handling argument " << argv[1] << std::endl;
 		opt_value = std::stoull(argv[1]);
 	}
 
