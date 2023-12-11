@@ -7,10 +7,12 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 #include <windows.h>
 
@@ -65,6 +67,7 @@ int main(int argc, char** argv)
 		("v,verbose", "enable verbose logging")
 		("s,session", "session used to download data", cxxopts::value<std::string>())
 		;
+	options.parse_positional({"year", "day"});
 	cxxopts::ParseResult result;
 	try
 	{
@@ -107,6 +110,13 @@ int main(int argc, char** argv)
 		return GetLastError();
 	}
 
+	const std::vector<std::string>& unmatched = result.unmatched();
+	const auto forward_argc = 1 + (int)unmatched.size();
+	char** forward_argv = new char*[forward_argc + 1];
+	forward_argv[0] = exe_path_c_str;
+	for (std::size_t i = 0; i < unmatched.size(); ++i) forward_argv[i + 1] = ::_strdup(unmatched[i].c_str());
+	forward_argv[forward_argc - 1] = nullptr;
+
 	if (result.count("run-tests"))
 	{
 		using Test_fn = bool (*)(int, char**);
@@ -116,11 +126,11 @@ int main(int argc, char** argv)
 			std::cerr << "Failed to load 'test' function from module" << std::endl;
 			return GetLastError();
 		}
-		return test_fn(1, &exe_path_c_str) == 0;
+		return test_fn(forward_argc, forward_argv) == 0;
 	}
 
 
-	using Solve_fn = void (*)(std::istream&);
+	using Solve_fn = void (*)(int, char**);
 	const auto solve_fn = reinterpret_cast<Solve_fn>(::GetProcAddress(library, "solve"));
 	if (!solve_fn)
 	{
@@ -128,7 +138,6 @@ int main(int argc, char** argv)
 		return GetLastError();
 	}
 
-	std::istream* p_is = &std::cin;
 	std::ifstream file;
 	if (result.count("data-dir"))
 	{
@@ -155,11 +164,11 @@ int main(int argc, char** argv)
 			}
 		}
 		file.open(data_file);
-		p_is = &file;
+		std::cin.rdbuf(file.rdbuf());
 	}
 
 	const std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-	solve_fn(*p_is);
+	solve_fn(forward_argc, forward_argv);
 	const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 	const std::chrono::steady_clock::duration duration = end - start;
 	std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(duration) << std::endl;

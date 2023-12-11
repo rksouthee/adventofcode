@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -85,9 +87,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const Input input = read_input(is);
+	const Input input = read_input(std::cin);
 	std::cout << part_one(input) << std::endl;
 	std::cout << part_two(input) << std::endl;
 }

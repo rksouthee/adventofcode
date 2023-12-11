@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <aoc/algorithm.h>
 
 #include <algorithm>
@@ -200,9 +201,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Input> inputs = read_input(is);
+	const std::vector<Input> inputs = read_input(std::cin);
 	std::cout << part_one(inputs) << std::endl;
 	std::cout << part_two(inputs) << std::endl;
 }

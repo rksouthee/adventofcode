@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -81,9 +83,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Game> games = read_input(is);
+	const std::vector<Game> games = read_input(std::cin);
 
 	std::cout << part_one(games) << std::endl;
 	std::cout << part_two(games) << std::endl;

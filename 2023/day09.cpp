@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
@@ -97,9 +98,9 @@ TEST_CASE("predict backward", "[part_two]")
 	REQUIRE(predict_backward({10, 13, 16, 21, 30, 45}) == 5);
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<std::vector<int>> histories = read_input(is);
+	const std::vector<std::vector<int>> histories = read_input(std::cin);
 
 	std::cout << part_one(histories) << std::endl;
 	std::cout << part_two(histories) << std::endl;

@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -212,9 +213,9 @@ TEST_CASE("is_symbol", "[aoc]")
 	REQUIRE(is_symbol('*'));
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<std::string> schematic = read_input(is);
+	const std::vector<std::string> schematic = read_input(std::cin);
 	const std::vector<Position> positions = get_number_positions(schematic);
 
 	std::cout << part_one(schematic, positions) << std::endl;

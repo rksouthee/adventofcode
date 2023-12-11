@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -107,9 +109,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Claim> claims = read_input(is);
+	const std::vector<Claim> claims = read_input(std::cin);
 	const std::pair<int, int> dimensions = get_max_dimensions(claims);
 	const std::vector<int> fabric = make_fabric(claims, dimensions.first, dimensions.second);
 

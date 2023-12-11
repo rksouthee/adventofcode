@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <aoc/algorithm.h>
 #include <aoc/string_helpers.h>
 
@@ -166,9 +167,9 @@ TEST_CASE("Cube Conundrum", "[2]")
 	REQUIRE(part_two(games) == 2286);
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Game> games = parse_input(is);
+	const std::vector<Game> games = parse_input(std::cin);
 
 	std::cout << part_one(games) << std::endl;
 	std::cout << part_two(games) << std::endl;

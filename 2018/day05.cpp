@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -63,9 +65,9 @@ TEST_CASE("polymer reactions", "[part one]")
 	REQUIRE(react("aabAAB") == "aabAAB");
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::string input = read_input(is);
+	const std::string input = read_input(std::cin);
 
 	std::cout << part_one(input) << std::endl;
 	std::cout << part_two(input) << std::endl;

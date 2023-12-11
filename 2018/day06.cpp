@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <algorithm>
@@ -162,9 +164,10 @@ TEST_CASE("get bounds", "")
 	REQUIRE(get_bounds({{1, 1}, {1, 6}, {8, 3}, {3, 4}, {5, 5}, {8, 9}}) == Rect{8, 9, 1, 1});
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Point> points = read_input(is);
+	const std::vector<Point> points = read_input(std::cin);
 	std::cout << part_one(points) << std::endl;
+	/** @todo allow passing this an option to the command line and default if none specified */
 	std::cout << part_two(points, points.size() > 32 ? 10000 : 32) << std::endl;
 }

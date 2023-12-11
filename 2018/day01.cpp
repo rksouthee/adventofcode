@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -49,10 +51,10 @@ TEST_CASE("part two", "[two]")
 	REQUIRE(part_two({7, 7, -2, -7, -4}) == 14);
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
 	using I = std::istream_iterator<int>;
-	const std::vector<int> changes(I{is}, I{});
+	const std::vector<int> changes(I{std::cin}, I{});
 	
 	std::cout << part_one(changes) << std::endl;
 	std::cout << part_two(changes) << std::endl;

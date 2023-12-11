@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <aoc/algorithm.h>
 
 #include <algorithm>
@@ -194,9 +195,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const Almanac& almanac = read_almanac(is);
+	const Almanac& almanac = read_almanac(std::cin);
 	std::cout << part_one(almanac) << std::endl;
 	std::cout << part_two(almanac) << std::endl;
 }

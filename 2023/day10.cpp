@@ -1,3 +1,4 @@
+#include "aoc.h"
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -186,9 +187,9 @@ TEST_CASE("get starting neighbours", "[neighbours]")
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	Grid grid = read_input(is);
+	Grid grid = read_input(std::cin);
 	const Point start = get_starting_point(grid);
 	std::pair<Point, Point> neighbours = get_starting_neighbours(grid, start);
 	grid[start.y][start.x] = get_starting_pipe(start, neighbours.first, neighbours.second);

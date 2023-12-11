@@ -1,5 +1,8 @@
+#include "aoc.h"
+
 #include <iostream>
 #include <iterator>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -82,9 +85,16 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<std::string> map = read_input(is);
+	std::optional<std::size_t> opt_value;
+	if (argc > 1)
+	{
+		std::cout << "Handling argument " << argv[1] << std::endl;
+		opt_value = std::stoull(argv[1]);
+	}
+
+	const std::vector<std::string> map = read_input(std::cin);
 
 	std::set<int> empty_columns;
 	for (int x = 0; x < (int)map.front().size(); ++x)
@@ -111,6 +121,13 @@ extern "C" void solve(std::istream& is)
 		}
 	}
 
-	std::cout << calculate_min_distances(points, empty_rows, empty_columns, 2) << std::endl;
-	std::cout << calculate_min_distances(points, empty_rows, empty_columns, 1'000'000) << std::endl;
+	if (opt_value)
+	{
+		std::cout << calculate_min_distances(points, empty_rows, empty_columns, *opt_value) << std::endl;
+	}
+	else
+	{
+		std::cout << calculate_min_distances(points, empty_rows, empty_columns, 2) << std::endl;
+		std::cout << calculate_min_distances(points, empty_rows, empty_columns, 1'000'000) << std::endl;
+	}
 }

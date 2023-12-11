@@ -1,3 +1,5 @@
+#include "aoc.h"
+
 #include <array>
 #include <iostream>
 #include <numeric>
@@ -182,9 +184,9 @@ namespace
 	}
 }
 
-extern "C" void solve(std::istream& is)
+SOLVE
 {
-	const std::vector<Action> actions = read_input(is);
+	const std::vector<Action> actions = read_input(std::cin);
 	const std::unordered_map<int, Sleep_map> guard_sleep_maps = get_sleep_map(actions);
 	const std::vector<Sleep_result> sleep_results = get_sleep_results(guard_sleep_maps);
 
