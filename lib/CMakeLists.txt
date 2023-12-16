@@ -11,4 +11,3 @@ target_sources(Aoc
 		aoc/string_helpers.h
 		aoc/orbit_structure.h
 )
-target_compile_features(Aoc PUBLIC cxx_std_20)
