@@ -1,5 +1,5 @@
-#ifndef AOC_CYCLE_DETECTION_H
-#define AOC_CYCLE_DETECTION_H
+#ifndef AOC_ORBIT_STRUCTURE_H
+#define AOC_ORBIT_STRUCTURE_H
 
 #include <utility>
 
