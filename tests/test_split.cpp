@@ -23,3 +23,11 @@ TEST_CASE("Split a string based on another string", "[split]")
 	REQUIRE(parts[1] == "23");
 	REQUIRE(parts[2] == "4");
 }
+
+TEST_CASE("Splitting on a string", "[split]")
+{
+	const std::string str = "abc -> a, b, c";
+	const std::string sep = " -> ";
+	std::vector<std::string_view> parts = aoc::split(str, sep);
+	REQUIRE(parts.size() == 2);
+}

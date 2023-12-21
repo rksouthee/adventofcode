@@ -55,6 +55,21 @@ TEST_CASE("Search for a range inside another range", "[algorithm]")
 	REQUIRE(p.second == haystack.begin() + 17);
 }
 
+TEST_CASE("Search needle in haystack", "[algorithm]")
+{
+	const std::string haystack = "abc -> a, b, c";
+	const std::string needle = " -> ";
+	using I = typename std::string::const_iterator;
+	using P = std::pair<I, I>;
+	P p = aoc::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+	REQUIRE(p.first == haystack.begin() + 3);
+	REQUIRE(p.second == haystack.begin() + 7);
+
+	p = aoc::search(p.second + 1, haystack.end(), needle.begin(), needle.end());
+	REQUIRE(p.first == haystack.end());
+	REQUIRE(p.second == haystack.end());
+}
+
 TEST_CASE("Parse an integer from a string", "[algorithm]")
 {
 	const std::string str = "123 ";

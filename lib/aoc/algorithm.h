@@ -121,7 +121,7 @@ namespace aoc
 			std::pair<I0, I1> p = aoc::find_mismatch(std::next(f), l_i0, std::next(f_i1), l_i1);
 			if (p.second == l_i1) return {f, p.first};
 			if (p.first == l_i0) return {l_i0, l_i0};
-			++f;
+			++f_i0;
 		}
 	}
 
