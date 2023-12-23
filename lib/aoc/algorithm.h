@@ -7,6 +7,8 @@
 
 #include <algorithm>
 
+#include <cctype>
+
 namespace aoc
 {
 	/**
