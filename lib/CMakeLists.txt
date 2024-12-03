@@ -1,5 +1,5 @@
-add_library(Aoc)
-target_sources(Aoc
+add_library(Elf)
+target_sources(Elf
 	PRIVATE
 		aoc/string_helpers.cpp
 	PUBLIC

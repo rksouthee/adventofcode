@@ -14,6 +14,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 find_package(Catch2 3 REQUIRED)
 find_package(CURL 8 REQUIRED)
 find_package(cxxopts 3 REQUIRED)
@@ -34,6 +36,7 @@ add_subdirectory(app)
 
 add_subdirectory(2018)
 add_subdirectory(2023)
+add_subdirectory(2024)
 
 if(BUILD_TESTING)
 	add_subdirectory(tests)

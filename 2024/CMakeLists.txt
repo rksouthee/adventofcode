@@ -1,0 +1,2 @@
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<TARGET_FILE_DIR:aoc>/2024")
+add_solution(1)

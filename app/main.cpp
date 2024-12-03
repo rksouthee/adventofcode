@@ -150,8 +150,12 @@ int main(int argc, char** argv)
 			{
 				std::cout << "The data file does not exist, trying to download" << std::endl;
 				const std::string cookie = "session=" + result["session"].as<std::string>();
-				std::filesystem::create_directory(data_file.parent_path());
-				if (!download_data(year, day, data_file, cookie))
+				std::filesystem::create_directories(data_file.parent_path());
+				if (download_data(year, day, data_file, cookie))
+				{
+					std::clog << "Downloaded data to " << data_file << std::endl;
+				}
+				else
 				{
 					std::cerr << "Failed to download data" << std::endl;
 					return EXIT_FAILURE;
