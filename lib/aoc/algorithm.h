@@ -33,7 +33,7 @@ namespace aoc
 	 * @brief
 	 *
 	 * @tparam I BidirectionalIterator.
-	 * @tparam T UnaryPredicate that takes a value type of I.
+	 * @tparam P UnaryPredicate that takes a value type of I.
 	 * @param f The iterator pointing to the beginning of the range.
 	 * @param l The iterator pointing to the end of the range.
 	 * @param p The unary predicate.
@@ -60,7 +60,7 @@ namespace aoc
 	 * @param f_i An iterator to the beginning of the range.
 	 * @param l_i An iterator to the end of the range.
 	 * @param x The value used as the delimiter.
-	 * @param fn Function that is passed a subrange.
+	 * @param fn Function that is passed a sub range.
 	 * @return The function object.
 	 */
 	template <typename I, typename T, typename F>

@@ -14,10 +14,10 @@ namespace aoc
 	 * @brief Split a string using a delimiter.
 	 *
 	 * @param str The string to split.
-	 * @param delim The delimiter to split on.
+	 * @param sep The delimiter to split on.
 	 * @returns A list of string views that have been split.
 	 */
-	std::vector<std::string_view> split(std::string_view str, char delim);
+	std::vector<std::string_view> split(std::string_view str, char sep);
 
 	/**
 	 * @brief Split a string using a separator.
@@ -26,7 +26,7 @@ namespace aoc
 	 * @param sep The separator to split on.
 	 * @returns A list of string views that have been split.
 	 */
-	std::vector<std::string_view> split(const std::string_view str, std::string_view sep);
+	std::vector<std::string_view> split(std::string_view str, std::string_view sep);
 }
 
 #endif

@@ -31,8 +31,8 @@ namespace
 	{
 		assert(list0.size() == list1.size());
 		int result = 0;
-		std::sort(list0.begin(), list0.end());
-		std::sort(list1.begin(), list1.end());
+		std::ranges::sort(list0);
+		std::ranges::sort(list1);
 		for (std::size_t i = 0; i < list0.size(); ++i)
 		{
 			result += std::abs(list0[i] - list1[i]);
@@ -73,6 +73,6 @@ SOLVE
 {
 	const auto [list0, list1] = read_input(std::cin);
 
-	std::cout << part_one(list0, list1) << std::endl;
-	std::cout << part_two(list0, list1) << std::endl;
+	std::cout << part_one(list0, list1) << '\n';
+	std::cout << part_two(list0, list1) << '\n';
 }

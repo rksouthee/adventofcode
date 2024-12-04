@@ -1,7 +1,6 @@
 #include <cxxopts.hpp>
 #include <curl/curl.h>
 
-#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <format>
@@ -18,9 +17,9 @@
 
 namespace
 {
-	size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream)
+	std::size_t write_data(const void* const ptr, const std::size_t size, const std::size_t count, void* stream)
 	{
-		size_t written = std::fwrite(ptr, size, nmemb, reinterpret_cast<std::FILE*>(stream));
+		const std::size_t written = std::fwrite(ptr, size, count, static_cast<std::FILE*>(stream));
 		return written;
 	}
 
@@ -29,7 +28,7 @@ namespace
 		CURL* const curl = curl_easy_init();
 		if (!curl)
 		{
-			std::cerr << "Failed to create curl handle" << std::endl;
+			std::cerr << "Failed to create curl handle\n";
 			return false;
 		}
 		const std::string url = std::format("https://adventofcode.com/{}/day/{}/input", year, day);
@@ -40,8 +39,7 @@ namespace
 		{
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
 			const CURLcode result = curl_easy_perform(curl);
-			std::fclose(file);
-			return result == 0;
+			return std::fclose(file) == 0 && result == 0;
 		}
 		return false;
 	}
@@ -52,7 +50,7 @@ int main(int argc, char** argv)
 	char* exe_path_c_str;
 	if (const errno_t error = _get_pgmptr(&exe_path_c_str))
 	{
-		std::cerr << "failed to get the path of the executable" << std::endl;
+		std::cerr << "failed to get the path of the executable\n";
 		return error;
 	}
 	const std::filesystem::path exe_path{exe_path_c_str};
@@ -75,20 +73,20 @@ int main(int argc, char** argv)
 	}
 	catch (const cxxopts::exceptions::parsing& ex)
 	{
-		std::cout << options.help() << std::endl;
-		std::cerr << ex.what() << std::endl;
+		std::cout << options.help() << '\n';
+		std::cerr << ex.what() << '\n';
 		return 1;
 	}
 
 	if (result.count("help"))
 	{
-		std::cout << options.help() << std::endl;
+		std::cout << options.help() << '\n';
 		return 0;
 	}
 
 	if (!result.count("year") || !result.count("day"))
 	{
-		std::cerr << "expected year and day to be specified" << std::endl;
+		std::cerr << "expected year and day to be specified\n";
 		return 0;
 	}
 
@@ -97,73 +95,77 @@ int main(int argc, char** argv)
 	const std::filesystem::path year_directory = parent / year;
 	const auto filename = std::format("day{:02}.dll", result["day"].as<int>());
 	const std::filesystem::path dll_path = year_directory / filename;
-	if (!std::filesystem::exists(dll_path))
+	if (!exists(dll_path))
 	{
-		std::cerr << "Failed to find " << dll_path << std::endl;
+		std::cerr << "Failed to find " << dll_path << '\n';
 		return ERROR_FILE_NOT_FOUND;
 	}
 
-	const HMODULE library = ::LoadLibraryW(dll_path.c_str());
-	if (library == NULL)
+	const HMODULE library = LoadLibraryW(dll_path.c_str());
+	if (library == nullptr)
 	{
-		std::cerr << "Failed to open module" << std::endl;
-		return GetLastError();
+		const DWORD error = GetLastError();
+		std::cerr << "Failed to open module: " << error << '\n';
+		return EXIT_FAILURE;
 	}
 
 	const std::vector<std::string>& unmatched = result.unmatched();
-	const auto forward_argc = 1 + (int)unmatched.size();
-	char** forward_argv = new char*[forward_argc + 1];
+	const auto forward_argc = 1 + static_cast<int>(unmatched.size());
+	auto** forward_argv = new char*[forward_argc + 1];
 	forward_argv[0] = exe_path_c_str;
-	for (std::size_t i = 0; i < unmatched.size(); ++i) forward_argv[i + 1] = ::_strdup(unmatched[i].c_str());
+	for (std::size_t i = 0; i < unmatched.size(); ++i) forward_argv[i + 1] = _strdup(unmatched[i].c_str());
 	forward_argv[forward_argc] = nullptr;
 
 	if (result.count("run-tests"))
 	{
 		using Test_fn = bool (*)(int, char**);
-		const auto test_fn = reinterpret_cast<Test_fn>(::GetProcAddress(library, "test"));
+		const auto test_fn = reinterpret_cast<Test_fn>(GetProcAddress(library, "test"));  // NOLINT(clang-diagnostic-cast-function-type-strict)
 		if (!test_fn)
 		{
-			std::cerr << "Failed to load 'test' function from module" << std::endl;
-			return GetLastError();
+			const DWORD error = GetLastError();
+			std::cerr << "Failed to load 'test' function from module: " << error << '\n';
+			return EXIT_FAILURE;
 		}
 		return test_fn(forward_argc, forward_argv) == 0;
 	}
 
 
 	using Solve_fn = void (*)(int, char**);
-	const auto solve_fn = reinterpret_cast<Solve_fn>(::GetProcAddress(library, "solve"));
+	const auto solve_fn = reinterpret_cast<Solve_fn>(GetProcAddress(library, "solve"));  // NOLINT(clang-diagnostic-cast-function-type-strict)
 	if (!solve_fn)
 	{
-		std::cerr << "Failed to load 'solve' function from module" << std::endl;
-		return GetLastError();
+		const DWORD error = GetLastError();
+		std::cerr << "Failed to load 'solve' function from module: " << error << '\n';
+		return EXIT_FAILURE;
 	}
 
+	// ReSharper disable once CppTooWideScope (We need to keep the file in scope since we may bind std::cin to it)
 	std::ifstream file;
 	if (result.count("data-dir"))
 	{
 		const std::filesystem::path data_directory(result["data-dir"].as<std::string>());
 		const auto day = std::to_string(result["day"].as<int>());
 		const std::filesystem::path data_file = data_directory / year / "day" / day / "input.txt";
-		if (!std::filesystem::exists(data_file))
+		if (!exists(data_file))
 		{
 			if (result.count("session"))
 			{
-				std::cout << "The data file does not exist, trying to download" << std::endl;
+				std::cout << "The data file does not exist, trying to download\n";
 				const std::string cookie = "session=" + result["session"].as<std::string>();
-				std::filesystem::create_directories(data_file.parent_path());
+				create_directories(data_file.parent_path());
 				if (download_data(year, day, data_file, cookie))
 				{
-					std::clog << "Downloaded data to " << data_file << std::endl;
+					std::clog << "Downloaded data to " << data_file << '\n';
 				}
 				else
 				{
-					std::cerr << "Failed to download data" << std::endl;
+					std::cerr << "Failed to download data" << '\n';
 					return EXIT_FAILURE;
 				}
 			}
 			else
 			{
-				std::cerr << "The data file does not exist " << data_file << std::endl;
+				std::cerr << "The data file does not exist " << data_file << '\n';
 				return EXIT_FAILURE;
 			}
 		}
@@ -175,7 +177,7 @@ int main(int argc, char** argv)
 	solve_fn(forward_argc, forward_argv);
 	const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 	const std::chrono::steady_clock::duration duration = end - start;
-	std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(duration) << std::endl;
+	std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(duration) << '\n';
 
-	return 0;
+	return EXIT_SUCCESS;
 }

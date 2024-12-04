@@ -23,11 +23,11 @@ TEST_CASE("Find an element not in an array", "[algorithm]")
 TEST_CASE("Find the last element in a range with a predicate", "[algorithm]")
 {
 	int xs[] = { 1, 3, 1, 4, 1, 5 };
-	int* ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](int x) { return x % 2 == 0; });
+	int* ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](const int x) { return x % 2 == 0; });
 	REQUIRE(ptr == xs + 4);
-	ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](int x) { return x > 4; });
+	ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](const int x) { return x > 4; });
 	REQUIRE(ptr == xs + 6);
-	ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](int x) { return x > 20; });
+	ptr = aoc::find_if_backward(std::begin(xs), std::end(xs), [](const int x) { return x > 20; });
 	REQUIRE(ptr == xs);
 }
 
@@ -48,18 +48,16 @@ TEST_CASE("Search for a range inside another range", "[algorithm]")
 	const std::string haystack = "Some books are to be tasted";
 	const std::string needle = "to";
 
-	using I = typename std::string::const_iterator;
-	using P = std::pair<I, I>;
-	P p = aoc::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
-	REQUIRE(p.first == haystack.begin() + 15);
-	REQUIRE(p.second == haystack.begin() + 17);
+	const auto [first, last] = aoc::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+	REQUIRE(first == haystack.begin() + 15);
+	REQUIRE(last == haystack.begin() + 17);
 }
 
 TEST_CASE("Search needle in haystack", "[algorithm]")
 {
 	const std::string haystack = "abc -> a, b, c";
 	const std::string needle = " -> ";
-	using I = typename std::string::const_iterator;
+	using I = std::string::const_iterator;
 	using P = std::pair<I, I>;
 	P p = aoc::search(haystack.begin(), haystack.end(), needle.begin(), needle.end());
 	REQUIRE(p.first == haystack.begin() + 3);
