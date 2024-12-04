@@ -1,0 +1,18 @@
+
+[*.{blockshader,c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cu,cuh,cxx,cxxm,fx,fxh,h,h++,hh,hlsl,hlsli,hlslinc,hp,hpp,hxx,icc,inc,inl,ino,ipp,ixx,mpp,mq4,mq5,mqh,mxx,shaderFoundry,tcc,tpp,urtshader,usf,ush}]
+indent_style = tab
+indent_size = tab
+tab_width = 8
+
+[*.{appxmanifest,axaml,axml,build,config,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,paml,proj,props,resw,resx,StyleCop,targets,tasks,vbproj,xaml,xamlx,xml,xoml,xsd}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[*]
+
+# ReSharper properties
+resharper_cpp_indent_size = 8
+resharper_cpp_indent_style = tab
+resharper_cpp_tab_width = 8
+resharper_cpp_use_indent_from_vs = false
