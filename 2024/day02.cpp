@@ -2,7 +2,6 @@
 #include "aoc/string_helpers.h"
 
 #include <algorithm>
-#include <charconv>
 #include <iostream>
 #include <numeric>
 #include <string>
@@ -18,12 +17,7 @@ namespace
 		{
 			const auto items = aoc::split(line, ' ');
 			auto& row = result.emplace_back();
-			std::ranges::transform(items, std::back_inserter(row), [](const std::string_view item)
-				{
-					int value = 0;
-					std::from_chars(item.data(), item.data() + item.size(), value);
-					return value;
-				});
+			std::ranges::transform(items, std::back_inserter(row), aoc::to_int_safe);
 		}
 		return result;
 	}

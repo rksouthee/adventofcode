@@ -1,10 +1,13 @@
 #include "aoc.h"
 #include "aoc/orbit_structure.h"
+#include "aoc/vector.h"
 
 #include <iostream>
 #include <string>
 #include <unordered_set>
 #include <vector>
+
+using aoc::Vector2;
 
 namespace
 {
@@ -21,24 +24,6 @@ namespace
 		return grid;
 	}
 
-	struct Vector2
-	{
-		S64 x;
-		S64 y;
-
-		static const Vector2 east;
-		static const Vector2 south;
-		static const Vector2 west;
-		static const Vector2 north;
-
-		bool operator==(const Vector2&) const = default;
-	};
-
-	const Vector2 Vector2::east = { .x= 1, .y= 0};
-	const Vector2 Vector2::south = { .x= 0, .y= 1};
-	const Vector2 Vector2::west = { .x= -1, .y= 0};
-	const Vector2 Vector2::north = { .x= 0, .y= -1};
-
 	Vector2 find_guard(const Grid& grid)
 	{
 		for (S64 y = 0; y < std::ssize(grid); ++y)
@@ -52,11 +37,6 @@ namespace
 			}
 		}
 		return { .x = -1, .y = -1 };
-	}
-
-	Vector2 operator+(const Vector2& lhs, const Vector2& rhs)
-	{
-		return { .x = lhs.x + rhs.x, .y = lhs.y + rhs.y };
 	}
 
 	Vector2 turn(const Vector2& p)

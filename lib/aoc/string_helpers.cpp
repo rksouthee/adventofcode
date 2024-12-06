@@ -2,6 +2,8 @@
 
 #include <aoc/algorithm.h>
 
+#include <charconv>
+
 namespace
 {
 	struct String_view_adder
@@ -31,5 +33,19 @@ namespace aoc
 		std::vector<std::string_view> result;
 		split(str.begin(), str.end(), sep.begin(), sep.end(), String_view_adder{result});
 		return result;
+	}
+
+	std::optional<int> to_int(const std::string_view str)
+	{
+		if (int result; std::from_chars(str.data(), str.data() + str.size(), result).ec == std::errc{})
+		{
+			return result;
+		}
+		return std::nullopt;
+	}
+
+	int to_int_safe(const std::string_view str)
+	{
+		return to_int(str).value_or(0);
 	}
 }

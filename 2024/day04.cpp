@@ -1,45 +1,14 @@
 #include "aoc.h"
+#include "aoc/vector.h"
 
 #include <iostream>
 #include <string>
 #include <vector>
 
+using aoc::Vector2;
+
 namespace
 {
-	struct Vector2
-	{
-		std::int64_t x;
-		std::int64_t y;
-
-		static const Vector2 east;
-		static const Vector2 north_east;
-		static const Vector2 north;
-		static const Vector2 north_west;
-		static const Vector2 west;
-		static const Vector2 south_west;
-		static const Vector2 south;
-		static const Vector2 south_east;
-	};
-
-	const Vector2 Vector2::east{ .x = 1, .y = 0 };
-	const Vector2 Vector2::north_east{ .x = 1, .y = -1 };
-	const Vector2 Vector2::north{ .x = 0, .y = -1 };
-	const Vector2 Vector2::north_west{ .x = -1, .y = -1 };
-	const Vector2 Vector2::west{ .x = -1, .y = 0 };
-	const Vector2 Vector2::south_west{ .x = -1, .y = 1 };
-	const Vector2 Vector2::south{ .x = 0, .y = 1 };
-	const Vector2 Vector2::south_east{ .x = 1, .y = 1 };
-
-	Vector2 operator+(const Vector2& p, const Vector2& q)
-	{
-		return { .x = p.x + q.x, .y = p.y + q.y };
-	}
-
-	Vector2 operator*(const Vector2& p, const std::size_t k)
-	{
-		return { .x = p.x * static_cast<std::int64_t>(k), .y = p.y * static_cast<std::int64_t>(k) };
-	}
-
 	using Grid = std::vector<std::string>;
 
 	Grid read_input(std::istream& input)
@@ -53,18 +22,18 @@ namespace
 		return result;
 	}
 
-	std::ptrdiff_t matches_word(const Grid& grid, const Vector2 start, const Vector2 direction, const std::string_view word)
+	S64 matches_word(const Grid& grid, const Vector2 start, const Vector2 direction, const std::string_view word)
 	{
-		if (const auto [end_x, end_y] = start + direction * (word.size() - 1);
-			end_y < 0 || end_y >= static_cast<std::int64_t>(grid.size()) || end_x < 0 || end_x >= static_cast<std::int64_t>(grid[0].size()))
+		if (const auto [end_x, end_y] = start + direction * (std::ssize(word) - 1);
+		    end_y < 0 || end_y >= std::ssize(grid) || end_x < 0 || end_x >= std::ssize(grid[end_y]))
 		{
 			return 0;
 		}
 
-		for (std::size_t i = 0; i < word.size(); ++i)
+		for (S64 i = 0; i < std::ssize(word); ++i)
 		{
 			if (const auto [x, y] = start + (direction * i);
-				grid[y][x] != word[i])
+			    grid[y][x] != word[i])
 			{
 				return 0;
 			}
@@ -73,49 +42,49 @@ namespace
 		return 1;
 	}
 
-	std::ptrdiff_t matches_word_east(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_east(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::east, word);
 	}
 
-	std::ptrdiff_t matches_word_south_east(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_south_east(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::south_east, word);
 	}
 
-	std::ptrdiff_t matches_word_south(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_south(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::south, word);
 	}
 
-	std::ptrdiff_t matches_word_south_west(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_south_west(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::south_west, word);
 	}
 
-	std::ptrdiff_t matches_word_west(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_west(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::west, word);
 	}
 
-	std::ptrdiff_t matches_word_north_west(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_north_west(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::north_west, word);
 	}
 
-	std::ptrdiff_t matches_word_north(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_north(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::north, word);
 	}
 
-	std::ptrdiff_t matches_word_north_east(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 matches_word_north_east(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		return matches_word(grid, start, Vector2::north_east, word);
 	}
 
-	std::ptrdiff_t count_words(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 count_words(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
-		std::ptrdiff_t result = 0;
+		S64 result = 0;
 		result += matches_word_east(grid, start, word);
 		result += matches_word_south_east(grid, start, word);
 		result += matches_word_south(grid, start, word);
@@ -127,22 +96,21 @@ namespace
 		return result;
 	}
 
-	std::ptrdiff_t part_one(const Grid& grid)
+	S64 part_one(const Grid& grid)
 	{
-		std::ptrdiff_t result = 0;
-		for (std::size_t y = 0; y < grid.size(); ++y)
+		S64 result = 0;
+		for (S64 y = 0; y < std::ssize(grid); ++y)
 		{
 			const std::string& line = grid[y];
-			for (std::size_t x = 0; x < line.size(); ++x)
+			for (S64 x = 0; x < std::ssize(line); ++x)
 			{
-				const std::ptrdiff_t count = count_words(grid, { .x = static_cast<std::int64_t>(x), .y = static_cast<std::int64_t>(y) }, "XMAS");
-				result += count;
+				result += count_words(grid, { .x = x, .y = y }, "XMAS");
 			}
 		}
 		return result;
 	}
 
-	std::ptrdiff_t count_cross(const Grid& grid, const Vector2 start, const std::string_view word)
+	S64 count_cross(const Grid& grid, const Vector2 start, const std::string_view word)
 	{
 		if (matches_word_south_east(grid, start + Vector2::north_west, word))
 		{
@@ -173,17 +141,17 @@ namespace
 		return 0;
 	}
 
-	std::ptrdiff_t part_two(const Grid& grid)
+	S64 part_two(const Grid& grid)
 	{
-		std::ptrdiff_t result = 0;
-		for (std::size_t y = 1; y < grid.size() - 1; ++y)
+		S64 result = 0;
+		for (S64 y = 1; y < std::ssize(grid) - 1; ++y)
 		{
 			const std::string& line = grid[y];
-			for (std::size_t x = 1; x < line.size() - 1; ++x)
+			for (S64 x = 1; x < std::ssize(line) - 1; ++x)
 			{
 				if (grid[y][x] == 'A')
 				{
-					result += count_cross(grid, { .x = static_cast<std::int64_t>(x), .y = static_cast<std::int64_t>(y) }, "MAS");
+					result += count_cross(grid, { .x = x, .y = y }, "MAS");
 				}
 			}
 		}
