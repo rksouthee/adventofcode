@@ -45,6 +45,34 @@ namespace aoc
 		return fast;
 	}
 
+	template <typename F, typename P, typename T>
+	T collision_point(const T& x, F f, P p)
+	{
+		if (!p(x))
+		{
+			return x;
+		}
+
+		T slow = x;
+		T fast = f(x);
+
+		while (fast != slow)
+		{
+			slow = f(slow);
+			if (!p(fast))
+			{
+				return fast;
+			}
+			fast = f(fast);
+			if (!p(fast))
+			{
+				return fast;
+			}
+			fast = f(fast);
+		}
+		return fast;
+	}
+
 	template <typename F, typename T>
 	T convergent_point(T x0, T x1, F f)
 	{
@@ -62,6 +90,23 @@ namespace aoc
 		return aoc::convergent_point(x, f(collision_point_nonterminating_orbit(x, f)), f);
 	}
 
+	template <typename F, typename P, typename T>
+	T connection_point(const T& x, F f, P p)
+	{
+		const T y = aoc::collision_point(x, f, p);
+		if (!p(y))
+		{
+			return y;
+		}
+		return aoc::convergent_point(x, f(y), f);
+	}
+
+	template <typename F, typename P, typename T>
+	bool terminating(const T& x, F f, P p)
+	{
+		return !p(aoc::collision_point(x, f, p));
+	}
+
 	template <typename T>
 	struct Orbit_structure
 	{
@@ -75,6 +120,19 @@ namespace aoc
 	{
 		T y = aoc::connection_point_nonterminating_orbit(x, f);
 		return { aoc::distance(x, y, f), aoc::distance(f(y), y, f), std::move(y) };
+	}
+
+	template <typename F, typename P, typename T>
+	Orbit_structure<T> orbit_structure(const T& x, F f, P p)
+	{
+		const T y = aoc::connection_point(x, f, p);
+		const std::size_t handle_size = aoc::distance(x, y, f);
+		std::size_t cycle_size = 0;
+		if (p(y))
+		{
+			cycle_size = aoc::distance(f(y), y, f);
+		}
+		return { handle_size, cycle_size, std::move(y) };
 	}
 }
 

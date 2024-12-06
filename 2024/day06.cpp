@@ -1,0 +1,188 @@
+#include "aoc.h"
+#include "aoc/orbit_structure.h"
+
+#include <iostream>
+#include <string>
+#include <unordered_set>
+#include <vector>
+
+namespace
+{
+	using Grid = std::vector<std::string>;
+
+	Grid read_input(std::istream& input)
+	{
+		Grid grid;
+		std::string line;
+		while (std::getline(input, line))
+		{
+			grid.push_back(line);
+		}
+		return grid;
+	}
+
+	struct Vector2
+	{
+		std::int64_t x;
+		std::int64_t y;
+
+		static const Vector2 east;
+		static const Vector2 south;
+		static const Vector2 west;
+		static const Vector2 north;
+
+		bool operator==(const Vector2&) const = default;
+	};
+
+	const Vector2 Vector2::east = { .x= 1, .y= 0};
+	const Vector2 Vector2::south = { .x= 0, .y= 1};
+	const Vector2 Vector2::west = { .x= -1, .y= 0};
+	const Vector2 Vector2::north = { .x= 0, .y= -1};
+
+	Vector2 find_guard(const Grid& grid)
+	{
+		for (std::int64_t y = 0; y < static_cast<std::int64_t>(grid.size()); ++y)
+		{
+			for (std::int64_t x = 0; x < static_cast<std::int64_t>(grid[y].size()); ++x)
+			{
+				if (grid[y][x] == '^')
+				{
+					return { .x = x, .y = y };
+				}
+			}
+		}
+		return { .x = -1, .y = -1 };
+	}
+
+	Vector2 operator+(const Vector2& lhs, const Vector2& rhs)
+	{
+		return { .x = lhs.x + rhs.x, .y = lhs.y + rhs.y };
+	}
+
+	Vector2 turn(const Vector2& p)
+	{
+		if (p == Vector2::east)
+		{
+			return Vector2::south;
+		}
+
+		if (p == Vector2::south)
+		{
+			return Vector2::west;
+		}
+
+		if (p == Vector2::west)
+		{
+			return Vector2::north;
+		}
+
+		return Vector2::east;
+	}
+
+	bool is_valid(const Grid& grid, const Vector2& p)
+	{
+		return p.y >= 0 && p.y < static_cast<std::int64_t>(grid.size()) && p.x >= 0 && p.x < static_cast<std::int64_t>(grid[p.y].size());
+	}
+
+	struct Guard
+	{
+		Vector2 position;
+		Vector2 direction;
+	};
+
+	Guard step(const Grid& grid, const Guard& guard)
+	{
+		const Vector2 next = guard.position + guard.direction;
+		if (!is_valid(grid, next))
+		{
+			return { .position = next, .direction = guard.direction };
+		}
+
+		if (grid[next.y][next.x] == '#')
+		{
+			return { .position = guard.position, .direction = turn(guard.direction) };
+		}
+
+		return { .position = next, .direction = guard.direction };
+	}
+
+	std::size_t part_one(const Grid& grid, Guard guard)
+	{
+		if (grid.empty())
+		{
+			return 0;
+		}
+
+		const auto width = static_cast<std::int64_t>(grid[0].size());
+		std::unordered_set<std::int64_t> visited;
+
+		while (is_valid(grid, guard.position))
+		{
+			visited.insert(guard.position.y * width + guard.position.x);
+			guard = step(grid, guard);
+		}
+
+		return visited.size();
+	}
+
+	struct State
+	{
+		const Grid* grid;
+		Guard guard;
+	};
+	
+	bool operator==(const State& lhs, const State& rhs)
+	{
+		return lhs.guard.position == rhs.guard.position && lhs.guard.direction == rhs.guard.direction;
+	}
+
+	struct Mover
+	{
+		State operator()(State state) const
+		{
+			state.guard = step(*state.grid, state.guard);
+			return state;
+		}
+	};
+
+	struct Is_valid
+	{
+		bool operator()(const State& state) const
+		{
+			return is_valid(*state.grid, state.guard.position);
+		}
+	};
+
+	std::size_t part_two(Grid grid, const Guard& guard)
+	{
+		std::size_t result = 0;
+		for (std::size_t y = 0; y < grid.size(); ++y)
+		{
+			for (std::size_t x = 0; x < grid[y].size(); ++x)
+			{
+				if (grid[y][x] != '.')
+				{
+					continue;
+				}
+
+				grid[y][x] = '#';
+				if (!aoc::terminating(State{ .grid = &grid, .guard = guard }, Mover{}, Is_valid{}))
+				{
+					++result;
+				}
+				grid[y][x] = '.';
+			}
+		}
+		return result;
+	}
+}
+
+SOLVE
+{
+	const Grid grid = read_input(std::cin);
+	const Vector2 start = find_guard(grid);
+	const Guard guard = { .position = start, .direction = Vector2::north };
+
+	std::cout << part_one(grid, guard) << '\n';
+	std::cout << part_two(grid, guard) << '\n';
+}
