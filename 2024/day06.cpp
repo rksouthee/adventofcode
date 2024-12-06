@@ -23,8 +23,8 @@ namespace
 
 	struct Vector2
 	{
-		std::int64_t x;
-		std::int64_t y;
+		S64 x;
+		S64 y;
 
 		static const Vector2 east;
 		static const Vector2 south;
@@ -41,9 +41,9 @@ namespace
 
 	Vector2 find_guard(const Grid& grid)
 	{
-		for (std::int64_t y = 0; y < static_cast<std::int64_t>(grid.size()); ++y)
+		for (S64 y = 0; y < std::ssize(grid); ++y)
 		{
-			for (std::int64_t x = 0; x < static_cast<std::int64_t>(grid[y].size()); ++x)
+			for (S64 x = 0; x < std::ssize(grid[y]); ++x)
 			{
 				if (grid[y][x] == '^')
 				{
@@ -81,7 +81,7 @@ namespace
 
 	bool is_valid(const Grid& grid, const Vector2& p)
 	{
-		return p.y >= 0 && p.y < static_cast<std::int64_t>(grid.size()) && p.x >= 0 && p.x < static_cast<std::int64_t>(grid[p.y].size());
+		return p.y >= 0 && p.y < std::ssize(grid) && p.x >= 0 && p.x < std::ssize(grid[p.y]);
 	}
 
 	struct Guard
@@ -106,23 +106,22 @@ namespace
 		return { .position = next, .direction = guard.direction };
 	}
 
-	std::size_t part_one(const Grid& grid, Guard guard)
+	std::unordered_set<S64> get_visited(const Grid& grid, Guard guard)
 	{
+		std::unordered_set<S64> visited;
 		if (grid.empty())
 		{
-			return 0;
+			return visited;
 		}
 
-		const auto width = static_cast<std::int64_t>(grid[0].size());
-		std::unordered_set<std::int64_t> visited;
-
+		const S64 width = std::ssize(grid[0]);
 		while (is_valid(grid, guard.position))
 		{
 			visited.insert(guard.position.y * width + guard.position.x);
 			guard = step(grid, guard);
 		}
 
-		return visited.size();
+		return visited;
 	}
 
 	struct State
@@ -153,26 +152,29 @@ namespace
 		}
 	};
 
-	std::size_t part_two(Grid grid, const Guard& guard)
+	U64 part_two(Grid grid, const Guard& guard, const std::unordered_set<S64>& visited)
 	{
-		std::size_t result = 0;
-		for (std::size_t y = 0; y < grid.size(); ++y)
+		U64 result = 0;
+		if (grid.empty())
 		{
-			for (std::size_t x = 0; x < grid[y].size(); ++x)
-			{
-				if (grid[y][x] != '.')
-				{
-					continue;
-				}
-
-				grid[y][x] = '#';
-				if (!aoc::terminating(State{ .grid = &grid, .guard = guard }, Mover{}, Is_valid{}))
-				{
-					++result;
-				}
-				grid[y][x] = '.';
-			}
+			return result;
 		}
+
+		const S64 width = std::ssize(grid[0]);
+		for (const S64 p : visited)
+		{
+			const S64 y = p / width;
+			const S64 x = p % width;
+			if (grid[y][x] != '.')
+			{
+				continue;
+			}
+
+			grid[y][x] = '#';
+			result += !aoc::terminating(State{ .grid = &grid, .guard = guard }, Mover{}, Is_valid{});
+			grid[y][x] = '.';
+		}
+
 		return result;
 	}
 }
@@ -182,7 +184,8 @@ SOLVE
 	const Grid grid = read_input(std::cin);
 	const Vector2 start = find_guard(grid);
 	const Guard guard = { .position = start, .direction = Vector2::north };
+	const std::unordered_set<S64> visited = get_visited(grid, guard);
 
-	std::cout << part_one(grid, guard) << '\n';
-	std::cout << part_two(grid, guard) << '\n';
+	std::cout << visited.size() << '\n';
+	std::cout << part_two(grid, guard, visited) << '\n';
 }
