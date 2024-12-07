@@ -5,6 +5,8 @@
 #ifndef AOC_STRING_HELPERS_H
 #define AOC_STRING_HELPERS_H
 
+#include <charconv>
+#include <concepts>
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -34,20 +36,35 @@ namespace aoc
 	/**
 	 * @brief Convert a string to a number.
 	 * 
+	 * @tparam T The type of number to convert to.
 	 * @param str The string to convert.
 	 * @returns The number if the conversion was successful, otherwise an empty optional.
 	 */
+	template <std::integral T>
 	[[nodiscard]]
-	std::optional<int> to_int(std::string_view str);
+	std::optional<T> convert(const std::string_view str)
+	{
+		const char* const end = str.data() + str.size();
+		if (T result; std::from_chars(str.data(), end, result).ptr == end)
+		{
+			return result;
+		}
+		return std::nullopt;
+	}
 
 	/**
 	 * @brief Convert a string to a number.
 	 *
+	 * @tparam T The type of number to convert to.
 	 * @param str The string to convert.
-	 * @returns The number if the conversion was successful, otherwise 0.
-	*/
+	 * @returns The number if the conversion was successful, otherwise a value initialized instance of T.
+	 */
+	template <std::integral T>
 	[[nodiscard]]
-	int to_int_safe(std::string_view str);
+	T convert_unguarded(const std::string_view str)
+	{
+		return convert<T>(str).value_or(T{});
+	}
 }
 
 #endif

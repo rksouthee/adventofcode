@@ -17,7 +17,7 @@ namespace
 		{
 			const auto items = aoc::split(line, ' ');
 			auto& row = result.emplace_back();
-			std::ranges::transform(items, std::back_inserter(row), aoc::to_int_safe);
+			std::ranges::transform(items, std::back_inserter(row), aoc::convert_unguarded<int>);
 		}
 		return result;
 	}
