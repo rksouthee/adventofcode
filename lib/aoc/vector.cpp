@@ -16,8 +16,37 @@ namespace aoc
 		return { .x = lhs.x + rhs.x, .y = lhs.y + rhs.y };
 	}
 
+	Vector2& operator+=(Vector2& lhs, const Vector2& rhs)
+	{
+		lhs.x += rhs.x;
+		lhs.y += rhs.y;
+		return lhs;
+	}
+
+	Vector2 operator-(const Vector2& lhs, const Vector2& rhs)
+	{
+		return { .x = lhs.x - rhs.x, .y = lhs.y - rhs.y };
+	}
+
+	Vector2& operator-=(Vector2& lhs, const Vector2& rhs)
+	{
+		lhs.x -= rhs.x;
+		lhs.y -= rhs.y;
+		return lhs;
+	}
+
+	Vector2 operator-(const Vector2& rhs)
+	{
+		return { .x = -rhs.x, .y = -rhs.y };
+	}
+
 	Vector2 operator*(const Vector2& lhs, const S64 rhs)
 	{
 		return { .x = lhs.x * rhs, .y = lhs.y * rhs };
+	}
+
+	Vector2 operator*(const S64 lhs, const Vector2& rhs)
+	{
+		return rhs * lhs;
 	}
 }

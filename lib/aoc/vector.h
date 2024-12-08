@@ -28,5 +28,10 @@ namespace aoc
 	};
 
 	Vector2 operator+(const Vector2& lhs, const Vector2& rhs);
+	Vector2& operator+=(Vector2& lhs, const Vector2& rhs);
+	Vector2 operator-(const Vector2& lhs, const Vector2& rhs);
+	Vector2& operator-=(Vector2& lhs, const Vector2& rhs);
+	Vector2 operator-(const Vector2& rhs);
 	Vector2 operator*(const Vector2& lhs, S64 rhs);
+	Vector2 operator*(S64 lhs, const Vector2& rhs);
 }
