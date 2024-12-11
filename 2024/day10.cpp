@@ -45,9 +45,8 @@ namespace
 		return position.x >= 0 && position.y >= 0 && position.x < std::ssize(grid[0]) && position.y < std::ssize(grid);
 	}
 
-	bool can_move_to(const Grid& grid, const Vector2 position, const Vector2 direction)
+	bool can_move_to(const Grid& grid, const Vector2 position, const Vector2 target)
 	{
-		const Vector2 target = position + direction;
 		if (!in_bounds(grid, target))
 		{
 			return false;
@@ -74,24 +73,13 @@ namespace
 		}
 
 		S64 result = 0;
-		if (can_move_to(grid, position, Vector2::east))
+		const Vector2 directions[] = { Vector2::east, Vector2::south, Vector2::west, Vector2::north };
+		for (const Vector2& direction : directions)
 		{
-			result += count_paths(grid, position + Vector2::east, visited);
-		}
-
-		if (can_move_to(grid, position, Vector2::south))
-		{
-			result += count_paths(grid, position + Vector2::south, visited);
-		}
-
-		if (can_move_to(grid, position, Vector2::west))
-		{
-			result += count_paths(grid, position + Vector2::west, visited);
-		}
-
-		if (can_move_to(grid, position, Vector2::north))
-		{
-			result += count_paths(grid, position + Vector2::north, visited);
+			if (const Vector2 target = position + direction; can_move_to(grid, position, target))
+			{
+				result += count_paths(grid, target, visited);
+			}
 		}
 
 		return result;
