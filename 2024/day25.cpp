@@ -1,0 +1,5 @@
+#include "aoc.h"
+
+SOLVE
+{
+}
