@@ -34,9 +34,9 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(app)
 
-add_subdirectory(2018)
-add_subdirectory(2023)
-add_subdirectory(2024)
+foreach(year RANGE 2015 2024)
+	add_subdirectory(${year})
+endforeach()
 
 if(BUILD_TESTING)
 	add_subdirectory(tests)
