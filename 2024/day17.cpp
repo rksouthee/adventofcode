@@ -5,6 +5,7 @@
 #include <array>
 #include <iostream>
 #include <regex>
+#include <span>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -14,7 +15,7 @@ namespace
 	struct Computer
 	{
 		std::array<S64, 3> registers;
-		std::vector<S64> program;
+		std::span<const U8> program;
 		S64 ip;
 		std::vector<S64> output;
 	};
@@ -27,21 +28,31 @@ namespace
 		return std::stoll(match[1]);
 	}
 
-	Computer read_input(std::istream& input)
+	Computer read_computer(std::istream& input)
 	{
 		Computer computer{};
 		std::string line;
-		for (U64 i = 0; i < computer.registers.size(); ++i)
+		for (S64& reg : computer.registers)
 		{
 			std::getline(input, line);
-			computer.registers[i] = parse_register(line);
+			reg = parse_register(line);
 		}
-		std::getline(input, line); // Skip empty line
-		std::getline(input, line);
+		return computer;
+	}
+
+	std::vector<U8> read_program(std::istream& input)
+	{
+		std::string line;
+		while (std::getline(input, line))
+		{
+			if (!line.empty()) break;
+		}
 		line = line.substr(9); // Skip "Program: "
 		const std::vector<std::string_view> tokens = aoc::split(line, ',');
-		std::ranges::transform(tokens, std::back_inserter(computer.program), aoc::convert_unguarded<S64>);
-		return computer;
+		std::vector<U8> program;
+		program.reserve(tokens.size());
+		std::ranges::transform(tokens, std::back_inserter(program), aoc::convert_unguarded<U8>);
+		return program;
 	}
 
 	bool should_halt(const Computer& computer)
@@ -69,6 +80,7 @@ namespace
 		return 0;
 	}
 
+	// @todo: Move this into shared library
 	S64 power(const S64 base, const S64 exponent)
 	{
 		S64 result = 1;
@@ -79,20 +91,25 @@ namespace
 		return result;
 	}
 
+	S64 divide_op(const Computer& computer, const S64 operand)
+	{
+		const S64 numerator = computer.registers[0];
+		const S64 denominator = power(2, get_combo_operand(computer, operand));
+		const S64 result = numerator / denominator;
+		return result;
+	}
+
 	void execute(Computer& computer)
 	{
 		const S64 opcode = computer.program[computer.ip];
 		const S64 operand = computer.program[computer.ip + 1];
+		computer.ip += 2;
 
 		switch (opcode)
 		{
 		case 0:
 		{
-			const S64 numerator = computer.registers[0];
-			const S64 denominator = power(2, get_combo_operand(computer, operand));
-			const S64 result = numerator / denominator;
-			computer.registers[0] = result;
-			computer.ip += 2;
+			computer.registers[0] = divide_op(computer, operand);
 			break;
 		}
 		case 1:
@@ -101,7 +118,6 @@ namespace
 			const S64 rhs = operand;
 			const S64 result = lhs ^ rhs;
 			computer.registers[1] = result;
-			computer.ip += 2;
 			break;
 		}
 		case 2:
@@ -109,16 +125,11 @@ namespace
 			const S64 value = get_combo_operand(computer, operand);
 			const S64 result = value % 8;
 			computer.registers[1] = result;
-			computer.ip += 2;
 			break;
 		}
 		case 3:
 		{
-			if (computer.registers[0] == 0)
-			{
-				computer.ip += 2;
-			}
-			else
+			if (computer.registers[0] != 0)
 			{
 				computer.ip = operand;
 			}
@@ -130,7 +141,6 @@ namespace
 			const S64 c = computer.registers[2];
 			const S64 result = b ^ c;
 			computer.registers[1] = result;
-			computer.ip += 2;
 			break;
 		}
 		case 5:
@@ -138,30 +148,35 @@ namespace
 			const S64 value = get_combo_operand(computer, operand);
 			const S64 result = value % 8;
 			computer.output.push_back(result);
-			computer.ip += 2;
 			break;
 		}
 		case 6:
 		{
-			const S64 numerator = computer.registers[0];
-			const S64 denominator = power(2, get_combo_operand(computer, operand));
-			const S64 result = numerator / denominator;
-			computer.registers[1] = result;
-			computer.ip += 2;
+			computer.registers[1] = divide_op(computer, operand);
 			break;
 		}
 		case 7:
 		{
-			const S64 numerator = computer.registers[0];
-			const S64 denominator = power(2, get_combo_operand(computer, operand));
-			const S64 result = numerator / denominator;
-			computer.registers[2] = result;
-			computer.ip += 2;
+			computer.registers[2] = divide_op(computer, operand);
 			break;
 		}
 		default:
 			break;
 		}
+	}
+
+	// @todo: Could be generic, and moved into shared library
+	std::string join(const std::vector<S64>& values, const char separator)
+	{
+		if (values.empty()) return "";
+
+		std::ostringstream oss;
+		oss << values.front();
+		for (S64 i = 1; i < std::ssize(values); ++i)
+		{
+			oss << separator << values[i];
+		}
+		return oss.str();
 	}
 
 	std::string part_one(Computer computer)
@@ -170,19 +185,7 @@ namespace
 		{
 			execute(computer);
 		}
-
-		if (computer.output.empty())
-		{
-			return "";
-		}
-
-		std::ostringstream oss;
-		oss << computer.output.front();
-		for (S64 i = 1; i < std::ssize(computer.output); ++i)
-		{
-			oss << ',' << computer.output[i];
-		}
-		return oss.str();
+		return join(computer.output, ',');
 	}
 
 	void run_loop_once(Computer& computer)
@@ -226,7 +229,9 @@ namespace
 
 SOLVE
 {
-	const Computer computer = read_input(std::cin);
+	Computer computer = read_computer(std::cin);
+	const std::vector<U8> program = read_program(std::cin);
+	computer.program = program;
 
 	std::cout << part_one(computer) << '\n';
 	std::cout << part_two(computer) << '\n';
