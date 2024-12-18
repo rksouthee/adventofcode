@@ -14,6 +14,12 @@ namespace
 {
 	using Grid = std::vector<U8>;
 
+	constexpr S64 width = 71;
+	constexpr S64 height = 71;
+	constexpr S64 num_points = 1024;
+	constexpr Vector2 start = { .x = 0, .y = 0 };
+	constexpr Vector2 end = { .x = width - 1, .y = height - 1 };
+
 	Vector2 parse_point(const std::string& line)
 	{
 		static const std::regex regex(R"((\d+),(\d+))");
@@ -33,7 +39,7 @@ namespace
 		return points;
 	}
 
-	Grid make_grid(std::span<const Vector2> points, const S64 width, const S64 height)
+	Grid make_grid(const std::span<const Vector2> points)
 	{
 		Grid grid(width * height, 0);
 		for (const Vector2& point : points)
@@ -44,23 +50,21 @@ namespace
 		return grid;
 	}
 
-	S64 to_index(const S64 width, const Vector2& point)
+	S64 to_index(const Vector2& point)
 	{
 		return point.y * width + point.x;
 	}
 
-	bool is_valid(const Grid& grid, const S64 width, const Vector2& point)
+	bool is_valid(const Vector2& point)
 	{
-		return point.x >= 0 && point.x < width && point.y >= 0 && point.y < std::ssize(grid) / width;
+		return point.x >= 0 && point.x < width && point.y >= 0 && point.y < height;
 	}
 
-	S64 shortest_path(const Grid& grid, const S64 width, const Vector2& start, const Vector2& end)
+	S64 shortest_path(const Grid& grid)
 	{
-		std::vector<bool> visited(std::size(grid), false);
 		std::vector<S64> distances(std::ssize(grid), 0);
-		S64 index = to_index(width, start);
+		S64 index = to_index(start);
 		distances[index] = 0;
-		visited[index] = true;
 		std::queue<Vector2> queue;
 		queue.push(start);
 
@@ -73,50 +77,38 @@ namespace
 			{
 				break;
 			}
-			index = to_index(width, p);
+
+			index = to_index(p);
 			for (const Vector2 direction : directions)
 			{
 				const Vector2 next = p + direction;
-				const S64 next_index = to_index(width, next);
-				if (is_valid(grid, width, next) && grid[next_index] != 1 && !visited[next_index])
+				const S64 next_index = to_index(next);
+				if (is_valid(next) && grid[next_index] != 1 && !distances[next_index])
 				{
-					visited[next_index] = true;
 					distances[next_index] = distances[index] + 1;
 					queue.push(next);
 				}
 			}
 		}
 
-		return distances[to_index(width, end)];
+		return distances[to_index(end)];
 	}
-#if 1
-	constexpr S64 width = 71;
-	constexpr S64 height = 71;
-	constexpr S64 num_points = 1024;
-#else
-	constexpr S64 width = 7;
-	constexpr S64 height = 7;
-	constexpr S64 num_points = 12;
-#endif
 
 	S64 part_one(const std::vector<Vector2>& points)
 	{
-		const Grid grid = make_grid(std::span{ points.data(), num_points }, width, height);
-		return shortest_path(grid, width, { 0, 0 }, { width - 1, height - 1 });
+		const Grid grid = make_grid(std::span{ points.data(), num_points });
+		return shortest_path(grid);
 	}
 
 	Vector2 part_two(const std::vector<Vector2>& points)
 	{
-		Grid grid = make_grid(std::span{ points.data(), num_points }, width, height);
-		for (U64 i = num_points + 1; i < std::size(points); ++i)
-		{
-			grid[to_index(width, points[i])] = 1;
-			if (shortest_path(grid, width, { 0, 0 }, { width - 1, height - 1 }) == 0)
+		const auto f = std::ranges::partition_point(points, [&](const Vector2& point)
 			{
-				return points[i];
-			}
-		}
-		return {};
+				const Grid grid = make_grid(std::span{ points.data(), &point + 1 });
+				return shortest_path(grid) != 0;
+			});
+		if (f == std::end(points)) return {};
+		return *f;
 	}
 }
 
@@ -124,6 +116,6 @@ SOLVE
 {
 	const std::vector<Vector2> points = read_input(std::cin);
 	std::cout << part_one(points) << '\n';
-	const Vector2 point = part_two(points);
-	std::cout << point.x << ',' << point.y << '\n';
+	const auto [x, y] = part_two(points);
+	std::cout << x << ',' << y << '\n';
 }
