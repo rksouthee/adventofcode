@@ -89,30 +89,30 @@ namespace
 			return;
 		}
 
-		const auto& instruction = machine.instructions[machine.ip];
+		const auto& [opcode, arg1, arg2] = machine.instructions[machine.ip];
 
-		switch (instruction.opcode)
+		switch (opcode)
 		{
 		case Opcode::set:
 		{
-			get_register(machine, instruction.arg1) = get_value(machine, instruction.arg2);
+			get_register(machine, arg1) = get_value(machine, arg2);
 			break;
 		}
 		case Opcode::sub:
 		{
-			get_register(machine, instruction.arg1) -= get_value(machine, instruction.arg2);
+			get_register(machine, arg1) -= get_value(machine, arg2);
 			break;
 		}
 		case Opcode::mul:
 		{
-			get_register(machine, instruction.arg1) *= get_value(machine, instruction.arg2);
+			get_register(machine, arg1) *= get_value(machine, arg2);
 			break;
 		}
 		case Opcode::jnz:
 		{
-			if (get_value(machine, instruction.arg1) != 0)
+			if (get_value(machine, arg1) != 0)
 			{
-				machine.ip += get_value(machine, instruction.arg2);
+				machine.ip += get_value(machine, arg2);
 				return;
 			}
 			break;
