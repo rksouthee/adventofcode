@@ -2,11 +2,8 @@
 #include "aoc/vector.h"
 
 #include <array>
-#include <cassert>
 #include <iostream>
 #include <queue>
-#include <map>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -53,136 +50,61 @@ namespace
 
 	std::vector<Vector2> get_shortest_path(const Grid& grid, const Vector2& start, const Vector2& end)
 	{
-		std::vector<std::vector<S64>> distance_map(std::ssize(grid), std::vector<S64>(std::ssize(grid), -1));
-		std::vector<std::vector<Vector2>> parent_map(std::ssize(grid), std::vector<Vector2>(std::ssize(grid), { -1, -1 }));
-		std::queue<Vector2> queue;
-		queue.push(start);
-		distance_map[start.y][start.x] = 0;
-
-		while (!queue.empty())
+		std::vector path = { start };
+		while (true)
 		{
-			const Vector2 current = queue.front();
-			if (current == end)
-			{
-				break;
-			}
-			queue.pop();
-
+			Vector2 current = path.back();
+			if (current == end) break;
 			const std::array directions = { Vector2::east, Vector2::south, Vector2::west, Vector2::north };
 			for (const Vector2 direction : directions)
 			{
 				const Vector2 target = current + direction;
-				if (is_empty(grid, target) && distance_map[target.y][target.x] == -1)
+				if (is_empty(grid, target) && (path.size() < 2 || target != path[path.size() - 2]))
 				{
-					if (grid[target.y][target.x] == '2' && grid[current.y][current.x] != '1') continue;
-					distance_map[target.y][target.x] = distance_map[current.y][current.x] + 1;
-					parent_map[target.y][target.x] = current;
-					queue.push(target);
+					path.push_back(target);
+					break;
 				}
 			}
 		}
-		std::vector<Vector2> path = { end };
-		Vector2 current = end;
-		while (current != start)
-		{
-			if (current.y < 0 || current.x < 0) return {};
-			path.push_back(current);
-			current = parent_map[current.y][current.x];
-		}
-		std::ranges::reverse(path);
 		return path;
 	}
 
-	bool is_wall(const Grid& grid, const Vector2& position)
+	S64 count_cheats(const std::vector<Vector2>& path, const S64 picoseconds, const S64 saved)
 	{
-		if (position.y < 0 || position.y >= std::ssize(grid) || position.x < 0 || position.x >= std::ssize(grid[0]))
+		const S64 path_len = std::ssize(path) - 1;
+		S64 count = 0;
+		for (S64 i = 0; i < path_len; ++i)
 		{
-			return false;
-		}
-		return grid[position.y][position.x] == '#';
-	}
-
-	void add_potential_walls_to_remove(const Grid& grid, std::set<std::pair<Vector2, Vector2>>& walls, const Vector2& position)
-	{
-		const std::array directions = { Vector2::east, Vector2::south, Vector2::west, Vector2::north };
-		for (const Vector2 direction : directions)
-		{
-			const Vector2 current = position + direction;
-			if (is_empty(grid, current))
+			for (S64 j = std::ssize(path); --j > i;)
 			{
-				walls.emplace(position, current);
-			}
-		}
-	}
-
-	std::set<std::pair<Vector2, Vector2>> find_potential_walls(const Grid& grid)
-	{
-		std::set<std::pair<Vector2, Vector2>> walls;
-		for (S64 y = 0; y < std::ssize(grid); ++y)
-		{
-			for (S64 x = 0; x < std::ssize(grid[y]); ++x)
-			{
-				if (grid[y][x] == '#')
+				if (const S64 distance = manhattan_distance(path[i], path[j]); distance <= picoseconds)
 				{
-					add_potential_walls_to_remove(grid, walls, { x, y });
+					if (j - i <= distance) continue;
+					if (j - i - distance >= saved) ++count;
 				}
 			}
 		}
-		return walls;
+		return count;
 	}
 
-	std::vector<Vector2> check_path(Grid& grid, const Vector2& start, const Vector2& end, const std::pair<Vector2, Vector2>& wall)
+	S64 part_one(const std::vector<Vector2>& path)
 	{
-		const char old_first = grid[wall.first.y][wall.first.x];
-		const char old_second = grid[wall.second.y][wall.second.x];
-		grid[wall.first.y][wall.first.x] = '1';
-		grid[wall.second.y][wall.second.x] = '2';
-		const std::vector<Vector2> path = get_shortest_path(grid, start, end);
-		grid[wall.first.y][wall.first.x] = old_first;
-		grid[wall.second.y][wall.second.x] = old_second;
-		return path;
+		return count_cheats(path, 2, 100);
+	}
+
+	S64 part_two(const std::vector<Vector2>& path)
+	{
+		return count_cheats(path, 20, 100);
 	}
 }
 
 SOLVE
 {
-	Grid grid = read_input(std::cin);
-
+	const Grid grid = read_input(std::cin);
 	const Vector2 start = find_position(grid, 'S');
 	const Vector2 end = find_position(grid, 'E');
 	const std::vector<Vector2> path = get_shortest_path(grid, start, end);
-	std::cout << path.size() - 1 << '\n';
-	for (const Vector2& position : path)
-	{
-		grid[position.y][position.x] = 'O';
-	}
-	for (const std::string& line : grid)
-	{
-		std::cout << line << '\n';
-	}
-	std::cout << '\n';
 
-	const auto potential_walls = find_potential_walls(grid);
-	std::pair<Vector2, Vector2> expected{ {8, 1}, {9, 1} };
-	if (potential_walls.contains(expected))
-	{
-		std::cout << "Found expected wall\n";
-	}
-	else
-	{
-		std::cout << "Did not find expected wall\n";
-	}
-
-	std::unordered_map<S64, S64> saved_times;
-	S64 part_one = 0;
-	for (const auto& cheat : potential_walls)
-	{
-		const auto cheat_path = check_path(grid, start, end, cheat);
-		if (cheat_path.empty()) continue;
-		if (cheat_path.size() >= path.size()) continue;
-		const S64 diff = std::ssize(path) - std::ssize(cheat_path);
-		saved_times[diff] += 1;
-		if (diff >= 100) ++part_one;
-	}
-	std::cout << part_one << '\n';
+	std::cout << part_one(path) << '\n';
+	std::cout << part_two(path) << '\n';
 }

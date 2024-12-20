@@ -1,5 +1,7 @@
 #include "aoc/vector.h"
 
+#include <cmath>
+
 namespace aoc
 {
 	const Vector2 Vector2::east = { .x = 1, .y = 0 };
@@ -48,5 +50,10 @@ namespace aoc
 	Vector2 operator*(const S64 lhs, const Vector2& rhs)
 	{
 		return rhs * lhs;
+	}
+
+	S64 manhattan_distance(const Vector2& p, const Vector2& q)
+	{
+		return std::abs(p.x - q.x) + std::abs(p.y - q.y);
 	}
 }

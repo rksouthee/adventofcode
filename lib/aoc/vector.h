@@ -34,4 +34,6 @@ namespace aoc
 	Vector2 operator-(const Vector2& rhs);
 	Vector2 operator*(const Vector2& lhs, S64 rhs);
 	Vector2 operator*(S64 lhs, const Vector2& rhs);
+
+	S64 manhattan_distance(const Vector2& p, const Vector2& q);
 }
