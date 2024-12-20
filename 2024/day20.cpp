@@ -3,7 +3,6 @@
 
 #include <array>
 #include <iostream>
-#include <queue>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -75,11 +74,10 @@ namespace
 		S64 count = 0;
 		for (S64 i = 0; i < path_len; ++i)
 		{
-			for (S64 j = std::ssize(path); --j > i;)
+			for (S64 j = i + saved + 1; j <= path_len; ++j)
 			{
 				if (const S64 distance = manhattan_distance(path[i], path[j]); distance <= picoseconds)
 				{
-					if (j - i <= distance) continue;
 					if (j - i - distance >= saved) ++count;
 				}
 			}
