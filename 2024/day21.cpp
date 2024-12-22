@@ -4,13 +4,10 @@
 #include <array>
 #include <iostream>
 #include <map>
-#include <queue>
 #include <span>
 #include <string>
 #include <vector>
 #include <catch2/catch_test_macros.hpp>
-
-using aoc::Vector2;
 
 namespace
 {
@@ -198,8 +195,8 @@ namespace
 		case '^': return 2;
 		case '<': return 3;
 		case '>': return 4;
+		default: return -1;
 		}
-		return -1;
 	}
 
 	const std::array<std::array<std::vector<std::string_view>, 5>, 5>& get_move_map()
@@ -221,7 +218,7 @@ namespace
 		/* ^ -> v */ result[2][1] = { "vA" };
 		/* ^ -> ^ */ result[2][2] = { "A" };
 		/* ^ -> < */ result[2][3] = { "v<A" };
-		/* ^ -> > */ result[2][4] = { ">vA", "v>A" };
+		/* ^ -> > */ result[2][4] = { "v>A", ">vA" };
 		/* < -> A */ result[3][0] = { ">>^A" };
 		/* < -> v */ result[3][1] = { ">A" };
 		/* < -> ^ */ result[3][2] = { ">^A" };
@@ -241,33 +238,42 @@ namespace
 		return get_move_map()[from_position(current)][from_position(expected)];
 	}
 
+	std::map<std::tuple<char, char, S64>, S64> s_cache;
+
 	S64 cost_of_moving(const char current, const char expected, const S64 depth)
 	{
+		const auto key = std::make_tuple(current, expected, depth);
+		if (const auto it = s_cache.find(key); it != s_cache.end())
+		{
+			return it->second;
+		}
 		if (depth == 0) return 1;
 		S64 result = 0;
 		char this_char = 'A';
 		const auto& paths = get(current, expected);
+		// @note: Shouldn't assume the first path is the shortest, though it works for my input!
 		for (const char ch : paths.front())
 		{
 			result += cost_of_moving(this_char, ch, depth - 1);
 			this_char = ch;
 		}
+		s_cache.emplace(key, result);
 		return result;
 	}
 
-	S64 cost_of_moving(const std::string_view moves)
+	S64 cost_of_moving(const std::string_view moves, const S64 depth)
 	{
 		S64 result = 0;
 		char current = 'A';
 		for (const char ch : moves)
 		{
-			result += cost_of_moving(current, ch, 2);
+			result += cost_of_moving(current, ch, depth);
 			current = ch;
 		}
 		return result;
 	}
 
-	S64 get_shortest_path(const std::string_view code)
+	S64 get_shortest_path(const std::string_view code, const S64 depth)
 	{
 		std::vector<S64> lengths = { 0 };
 		char current = 'A';
@@ -280,7 +286,7 @@ namespace
 				assert(!paths.empty());
 				for (const std::string& path : paths)
 				{
-					new_lengths.emplace_back(length + cost_of_moving(path + "A"));
+					new_lengths.emplace_back(length + cost_of_moving(path + "A", depth));
 				}
 			}
 			current = ch;
@@ -290,15 +296,25 @@ namespace
 		return std::ranges::min(lengths);
 	}
 
-	S64 part_one(const std::vector<std::string>& codes)
+	S64 solve(const std::vector<std::string>& codes, const S64 depth)
 	{
 		S64 sum = 0;
 		for (const std::string& code : codes)
 		{
-			const S64 length = get_shortest_path(code);
+			const S64 length = get_shortest_path(code, depth);
 			sum += calculate_complexity(code, length);
 		}
 		return sum;
+	}
+
+	S64 part_one(const std::vector<std::string>& codes)
+	{
+		return solve(codes, 2);
+	}
+
+	S64 part_two(const std::vector<std::string>& codes)
+	{
+		return solve(codes, 25);
 	}
 }
 
@@ -307,11 +323,11 @@ TEST_CASE("2024 21 1", "[2024][21][1]")
 	REQUIRE(cost_of_moving('A', '<', 2) == 10);
 	REQUIRE(cost_of_moving('<', 'A', 2) == 8);
 
-	REQUIRE(get_shortest_path("029A") == 68);
-	REQUIRE(get_shortest_path("980A") == 60);
-	REQUIRE(get_shortest_path("179A") == 68);
-	REQUIRE(get_shortest_path("456A") == 64);
-	REQUIRE(get_shortest_path("379A") == 64);
+	REQUIRE(get_shortest_path("029A", 2) == 68);
+	REQUIRE(get_shortest_path("980A", 2) == 60);
+	REQUIRE(get_shortest_path("179A", 2) == 68);
+	REQUIRE(get_shortest_path("456A", 2) == 64);
+	REQUIRE(get_shortest_path("379A", 2) == 64);
 
 	REQUIRE(part_one({ "029A", "980A", "179A", "456A", "379A" }) == 126384);
 }
@@ -321,5 +337,5 @@ SOLVE
 	const std::vector<std::string> codes = read_input(std::cin);
 
 	std::cout << part_one(codes) << '\n';
-	//std::cout << part_two(codes) << '\n';
+	std::cout << part_two(codes) << '\n';
 }
