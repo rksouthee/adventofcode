@@ -42,8 +42,10 @@ namespace
 
 	std::array<std::array<std::vector<std::string>, 11>, 11>& get_possible_paths()
 	{
+		static bool initialized = false;
 		static std::array<std::array<std::vector<std::string>, 11>, 11> possible_paths;
-		possible_paths[0][0] = { };
+		if (initialized) return possible_paths;
+		possible_paths[0][0] = { "" };
 		possible_paths[0][1] = { "^<" };
 		possible_paths[0][2] = { "^" };
 		possible_paths[0][3] = { "^>", ">^" };
@@ -55,7 +57,7 @@ namespace
 		possible_paths[0][9] = { "^^^>", ">^^^" };
 		possible_paths[0][10] = { ">" };
 		possible_paths[1][0] = { ">v" };
-		possible_paths[1][1] = { };
+		possible_paths[1][1] = { "" };
 		possible_paths[1][2] = { ">" };
 		possible_paths[1][3] = { ">>" };
 		possible_paths[1][4] = { "^" };
@@ -67,7 +69,7 @@ namespace
 		possible_paths[1][10] = { ">>v" };
 		possible_paths[2][0] = { "v" };
 		possible_paths[2][1] = { "<" };
-		possible_paths[2][2] = { };
+		possible_paths[2][2] = { "" };
 		possible_paths[2][3] = { ">" };
 		possible_paths[2][4] = { "<^", "^<" };
 		possible_paths[2][5] = { "^" };
@@ -79,7 +81,7 @@ namespace
 		possible_paths[3][0] = { "v<", "<v" };
 		possible_paths[3][1] = { "<<" };
 		possible_paths[3][2] = { "<" };
-		possible_paths[3][3] = { };
+		possible_paths[3][3] = { "" };
 		possible_paths[3][4] = { "<<^", "^<<" };
 		possible_paths[3][5] = { "^<", "<^" };
 		possible_paths[3][6] = { "^" };
@@ -91,7 +93,7 @@ namespace
 		possible_paths[4][1] = { "v" };
 		possible_paths[4][2] = { "v>", ">v" };
 		possible_paths[4][3] = { ">>v", "v>>" };
-		possible_paths[4][4] = {};
+		possible_paths[4][4] = { "" };
 		possible_paths[4][5] = { ">" };
 		possible_paths[4][6] = { ">>" };
 		possible_paths[4][7] = { "^" };
@@ -103,7 +105,7 @@ namespace
 		possible_paths[5][2] = { "v" };
 		possible_paths[5][3] = { "v>", ">v" };
 		possible_paths[5][4] = { "<" };
-		possible_paths[5][5] = { };
+		possible_paths[5][5] = { "" };
 		possible_paths[5][6] = { ">" };
 		possible_paths[5][7] = { "<^", "^<" };
 		possible_paths[5][8] = { "^" };
@@ -115,7 +117,7 @@ namespace
 		possible_paths[6][3] = { "v" };
 		possible_paths[6][4] = { "<<" };
 		possible_paths[6][5] = { "<" };
-		possible_paths[6][6] = { };
+		possible_paths[6][6] = { "" };
 		possible_paths[6][7] = { "<^^", "^^<" };
 		possible_paths[6][8] = { "^<", "<^" };
 		possible_paths[6][9] = { "^" };
@@ -127,7 +129,7 @@ namespace
 		possible_paths[7][4] = { "v" };
 		possible_paths[7][5] = { "v>", ">v" };
 		possible_paths[7][6] = { ">>v", "v>>" };
-		possible_paths[7][7] = { };
+		possible_paths[7][7] = { "" };
 		possible_paths[7][8] = { ">" };
 		possible_paths[7][9] = { ">>" };
 		possible_paths[7][10] = { ">>vvv" };
@@ -139,7 +141,7 @@ namespace
 		possible_paths[8][5] = { "v" };
 		possible_paths[8][6] = { "v>", ">v" };
 		possible_paths[8][7] = { "<" };
-		possible_paths[8][8] = { };
+		possible_paths[8][8] = { "" };
 		possible_paths[8][9] = { ">" };
 		possible_paths[8][10] = { "vvv>", ">vvv" };
 		possible_paths[9][0] = { "vvv<", "<vvv" };
@@ -151,7 +153,7 @@ namespace
 		possible_paths[9][6] = { "v" };
 		possible_paths[9][7] = { "<<" };
 		possible_paths[9][8] = { "<" };
-		possible_paths[9][9] = { };
+		possible_paths[9][9] = { "" };
 		possible_paths[9][10] = { "vvv" };
 		possible_paths[10][0] = { "<" };
 		possible_paths[10][1] = { "^<<" };
@@ -163,7 +165,8 @@ namespace
 		possible_paths[10][7] = { "^^^<<" };
 		possible_paths[10][8] = { "^^^<", "<^^^" };
 		possible_paths[10][9] = { "^^^" };
-		possible_paths[10][10] = { };
+		possible_paths[10][10] = { "" };
+		initialized = true;
 		return possible_paths;
 	}
 
@@ -186,243 +189,105 @@ namespace
 		return ch - 'A' + 10;
 	}
 
-	std::map<std::tuple<char, std::string, std::size_t>, S64> cost_cache;
-
-	S64 cost_of_moving(const char target, std::string& positions, const std::size_t robots)
+	S64 from_position(const char ch)
 	{
-		const auto key = std::tuple{ target, positions, robots };
-		if (const auto it = cost_cache.find(key); it != cost_cache.end())
+		switch (ch)
 		{
-			return it->second;
+		case 'A': return 0;
+		case 'v': return 1;
+		case '^': return 2;
+		case '<': return 3;
+		case '>': return 4;
 		}
-
-		S64 cost = 0;
-		if (robots == 0)
-		{
-			cost = 1;
-		}
-		else if (const char source = positions[robots - 1]; source == target)
-		{
-			cost = cost_of_moving('A', positions, robots - 1);
-		}
-		else
-		{
-			switch (source)
-			{
-			case '^':
-			{
-				switch (target)
-				{
-				case 'A':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '<':
-				{
-					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'v':
-				{
-					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '>':
-				{
-					std::string temp = positions;
-					const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					std::swap(positions, temp);
-					const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					if (cost1 < cost2)
-					{
-						positions = std::move(temp);
-						cost = cost1;
-					}
-					else
-					{
-						cost = cost2;
-					}
-				}
-				break;
-				}
-				break;
-			}
-			case 'A':
-			{
-				switch (target)
-				{
-				case '^':
-				{
-					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '<':
-				{
-					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'v':
-				{
-					std::string temp = positions;
-					const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					std::swap(positions, temp);
-					const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					if (cost1 < cost2)
-					{
-						positions = std::move(temp);
-						cost = cost1;
-					}
-					else
-					{
-						cost = cost2;
-					}
-					break;
-				}
-				case '>':
-				{
-					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				}
-				break;
-			}
-			case '<':
-			{
-				switch (target)
-				{
-				case '^':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'A':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'v':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '>':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				}
-				break;
-			}
-			case 'v':
-			{
-				switch (target)
-				{
-				case '^':
-				{
-					cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'A':
-				{
-					std::string temp = positions;
-					const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					std::swap(temp, positions);
-					const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					if (cost1 < cost2)
-					{
-						positions = std::move(temp);
-						cost = cost1;
-					}
-					else
-					{
-						cost = cost2;
-					}
-					break;
-				}
-				case '<':
-				{
-					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '>':
-				{
-					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				}
-				break;
-			}
-			case '>':
-			{
-				switch (target)
-				{
-				case '^':
-				{
-					std::string temp = positions;
-					const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					std::swap(temp, positions);
-					const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					if (cost1 < cost2)
-					{
-						positions = std::move(temp);
-						cost = cost1;
-					}
-					else
-					{
-						cost = cost2;
-					}
-					break;
-				}
-				case 'A':
-				{
-					cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case '<':
-				{
-					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				case 'v':
-				{
-					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-					break;
-				}
-				}
-				break;
-			}
-			}
-		}
-		if (robots > 0)
-		{
-			positions[robots - 1] = target;
-		}
-		cost_cache[key] = cost;
-		return cost;
+		return -1;
 	}
 
-	S64 get_shortest_path(const char source, const std::string_view code, const S64 current_length, S64 best, const std::string& robots)
+	const std::array<std::array<std::vector<std::string_view>, 5>, 5>& get_move_map()
 	{
-		if (code.empty())
-		{
-			return current_length;
-		}
+		static bool initialized = false;
+		static std::array<std::array<std::vector<std::string_view>, 5>, 5> result;
+		if (initialized) return result;
+		/* A -> A */ result[0][0] = { "A" };
+		/* A -> v */ result[0][1] = { "<vA", "v<A" };
+		/* A -> ^ */ result[0][2] = { "<A" };
+		/* A -> < */ result[0][3] = { "v<<A" };
+		/* A -> > */ result[0][4] = { "vA" };
+		/* v -> A */ result[1][0] = { "^>A", ">^A" };
+		/* v -> v */ result[1][1] = { "A" };
+		/* v -> ^ */ result[1][2] = { "^A" };
+		/* v -> < */ result[1][3] = { "<A" };
+		/* v -> > */ result[1][4] = { ">A" };
+		/* ^ -> A */ result[2][0] = { ">A" };
+		/* ^ -> v */ result[2][1] = { "vA" };
+		/* ^ -> ^ */ result[2][2] = { "A" };
+		/* ^ -> < */ result[2][3] = { "v<A" };
+		/* ^ -> > */ result[2][4] = { ">vA", "v>A" };
+		/* < -> A */ result[3][0] = { ">>^A" };
+		/* < -> v */ result[3][1] = { ">A" };
+		/* < -> ^ */ result[3][2] = { ">^A" };
+		/* < -> < */ result[3][3] = { "A" };
+		/* < -> > */ result[3][4] = { ">>A" };
+		/* > -> A */ result[4][0] = { "^A" };
+		/* > -> v */ result[4][1] = { "<A" };
+		/* > -> ^ */ result[4][2] = { "<^A", "^<A" };
+		/* > -> < */ result[4][3] = { "<<A" };
+		/* > -> > */ result[4][4] = { "A" };
+		initialized = true;
+		return result;
+	}
 
-		const auto possible_paths = get_possible_paths(from_hex(source), from_hex(code.front()));
-		for (const std::string& path : possible_paths)
+	std::vector<std::string_view> get(const char current, const char expected)
+	{
+		return get_move_map()[from_position(current)][from_position(expected)];
+	}
+
+	S64 cost_of_moving(const char current, const char expected, const S64 depth)
+	{
+		if (depth == 0) return 1;
+		S64 result = 0;
+		char this_char = 'A';
+		const auto& paths = get(current, expected);
+		for (const char ch : paths.front())
 		{
-			std::string copy = robots;
-			S64 this_path = current_length;
-			for (const char ch : path)
-			{
-				this_path += cost_of_moving(ch, copy, copy.size());
-			}
-			this_path += cost_of_moving('A', copy, copy.size());
-			this_path = get_shortest_path(code.front(), code.substr(1), this_path, best, copy);
-			best = std::min(best, this_path);
+			result += cost_of_moving(this_char, ch, depth - 1);
+			this_char = ch;
 		}
-		return best;
+		return result;
+	}
+
+	S64 cost_of_moving(const std::string_view moves)
+	{
+		S64 result = 0;
+		char current = 'A';
+		for (const char ch : moves)
+		{
+			result += cost_of_moving(current, ch, 2);
+			current = ch;
+		}
+		return result;
+	}
+
+	S64 get_shortest_path(const std::string_view code)
+	{
+		std::vector<S64> lengths = { 0 };
+		char current = 'A';
+		for (const char ch : code)
+		{
+			std::vector<S64> new_lengths;
+			for (const S64 length : lengths)
+			{
+				const std::span<const std::string> paths = get_possible_paths(from_hex(current), from_hex(ch));
+				assert(!paths.empty());
+				for (const std::string& path : paths)
+				{
+					new_lengths.emplace_back(length + cost_of_moving(path + "A"));
+				}
+			}
+			current = ch;
+			lengths = std::move(new_lengths);
+		}
+		assert(current == 'A');
+		return std::ranges::min(lengths);
 	}
 
 	S64 part_one(const std::vector<std::string>& codes)
@@ -430,19 +295,7 @@ namespace
 		S64 sum = 0;
 		for (const std::string& code : codes)
 		{
-			const S64 length = get_shortest_path('A', code, 0, std::numeric_limits<S64>::max(), "AA");
-			sum += calculate_complexity(code, length);
-		}
-		return sum;
-	}
-
-	S64 part_two(const std::vector<std::string>& codes)
-	{
-		const std::string robots(25, 'A');
-		S64 sum = 0;
-		for (const std::string& code : codes)
-		{
-			const S64 length = get_shortest_path('A', code, 0, std::numeric_limits<S64>::max(), robots);
+			const S64 length = get_shortest_path(code);
 			sum += calculate_complexity(code, length);
 		}
 		return sum;
@@ -451,11 +304,16 @@ namespace
 
 TEST_CASE("2024 21 1", "[2024][21][1]")
 {
-	std::string robots = "AA";
-	REQUIRE(cost_of_moving('<', robots, robots.size()) == 10);
-	REQUIRE(cost_of_moving('A', robots, robots.size()) == 8);
-	robots = "AA";
-	REQUIRE(cost_of_moving('<', robots, robots.size()) == 10);
+	REQUIRE(cost_of_moving('A', '<', 2) == 10);
+	REQUIRE(cost_of_moving('<', 'A', 2) == 8);
+
+	REQUIRE(get_shortest_path("029A") == 68);
+	REQUIRE(get_shortest_path("980A") == 60);
+	REQUIRE(get_shortest_path("179A") == 68);
+	REQUIRE(get_shortest_path("456A") == 64);
+	REQUIRE(get_shortest_path("379A") == 64);
+
+	REQUIRE(part_one({ "029A", "980A", "179A", "456A", "379A" }) == 126384);
 }
 
 SOLVE
