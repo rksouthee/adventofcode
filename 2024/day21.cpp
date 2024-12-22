@@ -3,6 +3,7 @@
 
 #include <array>
 #include <iostream>
+#include <map>
 #include <queue>
 #include <span>
 #include <string>
@@ -185,207 +186,219 @@ namespace
 		return ch - 'A' + 10;
 	}
 
-	S64 cost_of_moving(const char target, std::string& positions, std::size_t robots)
-	{
-		if (robots == 0)
-		{
-			return 1;
-		}
+	std::map<std::tuple<char, std::string, std::size_t>, S64> cost_cache;
 
-		const char source = positions[robots - 1];
-		if (source == target)
+	S64 cost_of_moving(const char target, std::string& positions, const std::size_t robots)
+	{
+		const auto key = std::tuple{ target, positions, robots };
+		if (const auto it = cost_cache.find(key); it != cost_cache.end())
 		{
-			return cost_of_moving('A', positions, robots - 1);
+			return it->second;
 		}
 
 		S64 cost = 0;
-		switch (source)
+		if (robots == 0)
 		{
-		case '^':
-		{
-			switch (target)
-			{
-			case 'A':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case '<':
-			{
-				cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case 'v':
-			{
-				cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case '>':
-			{
-				std::string temp = positions;
-				const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				std::swap(positions, temp);
-				const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				if (cost1 < cost2)
-				{
-					positions = std::move(temp);
-					cost = cost1;
-				}
-				else
-				{
-					cost = cost2;
-				}
-			}
-			break;
-			}
-			break;
+			cost = 1;
 		}
-		case 'A':
+		else if (const char source = positions[robots - 1]; source == target)
 		{
-			switch (target)
+			cost = cost_of_moving('A', positions, robots - 1);
+		}
+		else
+		{
+			switch (source)
 			{
 			case '^':
 			{
-				cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case '<':
-			{
-				cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case 'v':
-			{
-				std::string temp = positions;
-				const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				std::swap(positions, temp);
-				const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				if (cost1 < cost2)
+				switch (target)
 				{
-					positions = std::move(temp);
-					cost = cost1;
+				case 'A':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
 				}
-				else
+				case '<':
 				{
-					cost = cost2;
+					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
 				}
-				break;
-			}
-			case '>':
-			{
-				cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			}
-			break;
-		}
-		case '<':
-		{
-			switch (target)
-			{
-			case '^':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case 'A':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case 'v':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case '>':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			}
-			break;
-		}
-		case 'v':
-		{
-			switch (target)
-			{
-			case '^':
-			{
-				cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case 'A':
-			{
-				std::string temp = positions;
-				const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				std::swap(temp, positions);
-				const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				if (cost1 < cost2)
+				case 'v':
 				{
-					positions = std::move(temp);
-					cost = cost1;
+					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
 				}
-				else
+				case '>':
 				{
-					cost = cost2;
+					std::string temp = positions;
+					const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					std::swap(positions, temp);
+					const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					if (cost1 < cost2)
+					{
+						positions = std::move(temp);
+						cost = cost1;
+					}
+					else
+					{
+						cost = cost2;
+					}
 				}
 				break;
-			}
-			case '<':
-			{
-				cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			case '>':
-			{
-				cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				break;
-			}
-			}
-			break;
-		}
-		case '>':
-		{
-			switch (target)
-			{
-			case '^':
-			{
-				std::string temp = positions;
-				const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				std::swap(temp, positions);
-				const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
-				if (cost1 < cost2)
-				{
-					positions = std::move(temp);
-					cost = cost1;
-				}
-				else
-				{
-					cost = cost2;
 				}
 				break;
 			}
 			case 'A':
 			{
-				cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+				switch (target)
+				{
+				case '^':
+				{
+					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case '<':
+				{
+					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case 'v':
+				{
+					std::string temp = positions;
+					const S64 cost1 = cost_of_moving('v', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					std::swap(positions, temp);
+					const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					if (cost1 < cost2)
+					{
+						positions = std::move(temp);
+						cost = cost1;
+					}
+					else
+					{
+						cost = cost2;
+					}
+					break;
+				}
+				case '>':
+				{
+					cost = cost_of_moving('v', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				}
 				break;
 			}
 			case '<':
 			{
-				cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+				switch (target)
+				{
+				case '^':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case 'A':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case 'v':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case '>':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				}
 				break;
 			}
 			case 'v':
 			{
-				cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+				switch (target)
+				{
+				case '^':
+				{
+					cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case 'A':
+				{
+					std::string temp = positions;
+					const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					std::swap(temp, positions);
+					const S64 cost2 = cost_of_moving('>', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					if (cost1 < cost2)
+					{
+						positions = std::move(temp);
+						cost = cost1;
+					}
+					else
+					{
+						cost = cost2;
+					}
+					break;
+				}
+				case '<':
+				{
+					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case '>':
+				{
+					cost = cost_of_moving('>', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				}
+				break;
+			}
+			case '>':
+			{
+				switch (target)
+				{
+				case '^':
+				{
+					std::string temp = positions;
+					const S64 cost1 = cost_of_moving('^', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					std::swap(temp, positions);
+					const S64 cost2 = cost_of_moving('<', positions, robots - 1) + cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					if (cost1 < cost2)
+					{
+						positions = std::move(temp);
+						cost = cost1;
+					}
+					else
+					{
+						cost = cost2;
+					}
+					break;
+				}
+				case 'A':
+				{
+					cost = cost_of_moving('^', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case '<':
+				{
+					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				case 'v':
+				{
+					cost = cost_of_moving('<', positions, robots - 1) + cost_of_moving('A', positions, robots - 1);
+					break;
+				}
+				}
 				break;
 			}
 			}
-			break;
 		}
+		if (robots > 0)
+		{
+			positions[robots - 1] = target;
 		}
-		positions[robots - 1] = target;
+		cost_cache[key] = cost;
 		return cost;
 	}
 
@@ -441,6 +454,8 @@ TEST_CASE("2024 21 1", "[2024][21][1]")
 	std::string robots = "AA";
 	REQUIRE(cost_of_moving('<', robots, robots.size()) == 10);
 	REQUIRE(cost_of_moving('A', robots, robots.size()) == 8);
+	robots = "AA";
+	REQUIRE(cost_of_moving('<', robots, robots.size()) == 10);
 }
 
 SOLVE
