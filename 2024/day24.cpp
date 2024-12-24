@@ -93,7 +93,7 @@ namespace
 	U64 get_number(const char letter, std::unordered_map<std::string, U64> values, const std::unordered_map<std::string, Connection>& connections)
 	{
 		U64 result = 0;
-		for (const auto& [key, _] : connections)
+		for (const std::string& key : std::ranges::views::keys(connections))
 		{
 			const std::regex re(std::format("{}(\\d+)", letter));
 			std::smatch match;
