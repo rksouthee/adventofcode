@@ -43,6 +43,12 @@ namespace
 		}
 		return false;
 	}
+
+	template <typename T>
+	T get_proc_address(const HMODULE module, const char* const proc_name)
+	{
+		return reinterpret_cast<T>(reinterpret_cast<void*>(GetProcAddress(module, proc_name)));
+	}
 }
 
 int main(int argc, char** argv)
@@ -119,7 +125,7 @@ int main(int argc, char** argv)
 	if (result.count("run-tests"))
 	{
 		using Test_fn = bool (*)(int, char**);
-		const auto test_fn = reinterpret_cast<Test_fn>(GetProcAddress(library, "test"));  // NOLINT(clang-diagnostic-cast-function-type-strict)
+		const auto test_fn = get_proc_address<Test_fn>(library, "test");
 		if (!test_fn)
 		{
 			const DWORD error = GetLastError();
@@ -131,7 +137,7 @@ int main(int argc, char** argv)
 
 
 	using Solve_fn = void (*)(int, char**);
-	const auto solve_fn = reinterpret_cast<Solve_fn>(GetProcAddress(library, "solve"));  // NOLINT(clang-diagnostic-cast-function-type-strict)
+	const auto solve_fn = get_proc_address<Solve_fn>(library, "solve");
 	if (!solve_fn)
 	{
 		const DWORD error = GetLastError();
