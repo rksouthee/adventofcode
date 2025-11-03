@@ -34,7 +34,8 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(app)
 
-foreach(year RANGE 2015 2024)
+foreach(year RANGE 2015 2025)
+	aoc_generate_template(${year})
 	add_subdirectory(${year})
 endforeach()
 

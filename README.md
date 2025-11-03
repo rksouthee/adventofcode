@@ -57,3 +57,12 @@ aoc --year 2023 --day 8 --run-rests
 ```
 
 This will only run the tests, once the tests have finished the program will end.
+
+## New year
+
+Setting up a new year can be done by modifying the root `CMakeLists.txt` file
+and updating the `foreach` for the `year` and updating the `<stop>` to the
+current year.
+
+When you run configure again it will generate the directory structure and stub
+out all the days.

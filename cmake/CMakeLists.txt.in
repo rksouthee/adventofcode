@@ -1,0 +1,4 @@
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "$<TARGET_FILE_DIR:aoc>/@YEAR@")
+foreach(DAY RANGE 1 @NUMBER_OF_DAYS@)
+	add_solution(${DAY})
+endforeach()
