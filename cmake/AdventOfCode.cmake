@@ -12,6 +12,8 @@ function(add_solution day)
 	aoc_get_filename_padded(${day} day)
 	set(AOC_TARGET_NAME "${AOC_YEAR}_day${day}")
 	add_library(${AOC_TARGET_NAME} MODULE "day${day}.cpp")
+	# Make all of these a dependency on the aoc target so that building the main app will build all solutions
+	add_dependencies(aoc ${AOC_TARGET_NAME})
 	set_target_properties(${AOC_TARGET_NAME} PROPERTIES
 		OUTPUT_NAME "day${day}"
 		FOLDER ${AOC_YEAR}
