@@ -50,6 +50,10 @@ passing your session cookie
 aoc --year 2023 --day 8 --data-dir ../data --session <your session token>
 ```
 
+To get your session cookie you can use the developer tools in your browser and
+go to one of the input file links. In the request headers there will be the
+Cookie field, grab the session value.
+
 Some of the solutions have tests, the tests can be run with the following command
 
 ```sh
