@@ -142,32 +142,43 @@ namespace
         return true;
     }
 
-    S64 part_one(const S64 ip_register, const std::span<const Instruction> program)
+    S64 sum_divisors(const S64 n)
+    {
+        S64 sum = 0;
+        for (S64 i = 1; i * i <= n; ++i)
+        {
+            if (n % i == 0)
+            {
+                sum += i;
+                if (i * i != n)
+                {
+                    sum += n / i;
+                }
+            }
+        }
+        return sum;
+    }
+
+    S64 run_program_fast(const S64 ip_register, const std::span<const Instruction> program, const S64 initial_r0)
     {
         Device device{};
         device.ip_register = ip_register;
         device.program = program;
-
-        while (evaluate(device))
+        device.registers[0] = initial_r0;
+        while (evaluate(device) && device.ip_value != 1)
         {
         }
+        return sum_divisors(device.registers[4]);
+    }
 
-        return device.registers[0];
+    S64 part_one(const S64 ip_register, const std::span<const Instruction> program)
+    {
+        return run_program_fast(ip_register, program, 0);
     }
 
     S64 part_two(const S64 ip_register, const std::span<const Instruction> program)
     {
-        // TODO: runs too long - need to analyze the program to find a better solution
-        Device device{};
-        device.ip_register = ip_register;
-        device.program = program;
-        device.registers[0] = 1;
-
-        while (evaluate(device))
-        {
-        }
-
-        return device.registers[0];
+        return run_program_fast(ip_register, program, 1);
     }
 }
 
@@ -211,5 +222,5 @@ SOLVE
 {
     const std::pair<S64, std::vector<Instruction>> input = read_input(std::cin);
     std::cout << part_one(input.first, input.second) << '\n';
-    //std::cout << part_two(input.first, input.second) << '\n';
+    std::cout << part_two(input.first, input.second) << '\n';
 }
