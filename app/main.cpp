@@ -72,6 +72,7 @@ bool run_solution(const SolveFunction solve_fn, const int argc, char **argv, con
     std::thread worker(solve_fn, argc, argv);
 
     const HANDLE thread_handle = worker.native_handle();
+    const DWORD wait_milliseconds = static_cast<DWORD>(timeout.count());
     const DWORD wait_result = WaitForSingleObject(thread_handle, wait_milliseconds);
     if (wait_result == WAIT_OBJECT_0)
     {
