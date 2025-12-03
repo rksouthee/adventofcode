@@ -24,13 +24,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(AdventOfCode)
 include(Catch)
 
-# NOTE: Use `CMAKE_COMPILE_WARNING_AS_ERROR` cache variable to treat warnings as errors or not.
-if(MSVC)
-	add_compile_options(/W4)
-else()
-	add_compile_options(-Wall -Wextra -pedantic -Wno-gnu-anonymous-struct)
-endif()
-
 add_subdirectory(lib)
 add_subdirectory(app)
 
