@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 		("h,help", "print options")
 		("y,year", "year", cxxopts::value<int>())
 		("d,day", "day", cxxopts::value<int>())
-		("run-tests", "run tests and quit")
+		("skip-tests", "skip tests")
 		("D,data-dir", "directory containing input", cxxopts::value<std::string>())
 		("v,verbose", "enable verbose logging")
 		("s,session", "session used to download data", cxxopts::value<std::string>())
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
     }
     forward_argv[forward_argc] = nullptr;
 
-    if (result.count("run-tests"))
+    if (!result.count("skip-tests"))
     {
         const auto test_fn = get_proc_address<TestFunction>(library, "test");
         if (!test_fn)
@@ -192,10 +192,10 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
 
-        if (!test_fn(forward_argc, forward_argv))
+        if (const int test_result = test_fn(forward_argc, forward_argv); test_result != 0)
         {
             std::cerr << "Tests failed\n";
-            return EXIT_FAILURE;
+            return test_result;
         }
     }
 
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
     }
     const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     const std::chrono::steady_clock::duration duration = end - start;
-    std::cout << "Finished in " << duration << '\n';
+    std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(duration) << '\n';
 
     return EXIT_SUCCESS;
 }

@@ -54,13 +54,12 @@ To get your session cookie you can use the developer tools in your browser and
 go to one of the input file links. In the request headers there will be the
 Cookie field, grab the session value.
 
-Some of the solutions have tests, the tests can be run with the following command
+Some of the solutions have tests that can be run. The tests will be run automatically unless the command line
+option `--skip-tests` is used.
 
 ```sh
-aoc --year 2023 --day 8 --run-rests
+aoc --year 2023 --day 8 --skip-tests
 ```
-
-This will only run the tests, once the tests have finished the program will end.
 
 ## New year
 
