@@ -31,6 +31,10 @@ namespace
 {
 }
 
+TEST_CASE(\"Part One\")
+{
+}
+
 SOLVE
 {
 }
