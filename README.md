@@ -61,6 +61,13 @@ automatically unless the command line option `--skip-tests` is used.
 aoc --year 2023 --day 8 --skip-tests
 ```
 
+You can enable verbose logging by setting the `--verbose` flag on the command
+line. This is only enabled in debug builds (if `NDEBUG` is not defined).
+
+```sh
+aoc --year 2025 --day 3 --verbose
+```
+
 ## New year
 
 Setting up a new year can be done by modifying the root `CMakeLists.txt` file
