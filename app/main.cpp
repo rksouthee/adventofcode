@@ -171,6 +171,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if (!result.count("verbose"))
+    {
+        std::clog.setstate(std::ios_base::failbit);
+    }
+
     const std::vector<std::string> &unmatched = result.unmatched();
     const auto forward_argc = 1 + static_cast<int>(unmatched.size());
     auto **forward_argv = new char *[forward_argc + 1];
