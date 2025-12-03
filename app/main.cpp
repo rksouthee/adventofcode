@@ -44,7 +44,7 @@ bool download_data(const std::string &year, const std::string &day, const std::f
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(curl, CURLOPT_COOKIE, cookie.c_str());
-    if (std::FILE * file; _wfopen_s(&file, path.c_str(), L"wb") == 0)
+    if (std::FILE * file; _wfopen_s(&file, path.c_str(), L"wb") == 0 && file)
     {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
         const CURLcode result = curl_easy_perform(curl);
@@ -72,7 +72,6 @@ bool run_solution(const SolveFunction solve_fn, const int argc, char **argv, con
     std::thread worker(solve_fn, argc, argv);
 
     const HANDLE thread_handle = worker.native_handle();
-    const DWORD wait_milliseconds = timeout.count();
     const DWORD wait_result = WaitForSingleObject(thread_handle, wait_milliseconds);
     if (wait_result == WAIT_OBJECT_0)
     {
@@ -84,6 +83,13 @@ bool run_solution(const SolveFunction solve_fn, const int argc, char **argv, con
     if (wait_result != WAIT_TIMEOUT)
     {
         throw std::logic_error("Unexpected result from WaitForSingleObject");
+    }
+
+    // Don't terminate the thread if a debugger is attached
+    if (IsDebuggerPresent())
+    {
+        worker.join();
+        return true;
     }
 
     // Timed out - terminate the thread. We're not too concerned about resource leaks here since the whole process will
@@ -169,7 +175,9 @@ int main(int argc, char **argv)
     auto **forward_argv = new char *[forward_argc + 1];
     forward_argv[0] = exe_path_c_str;
     for (std::size_t i = 0; i < unmatched.size(); ++i)
+    {
         forward_argv[i + 1] = _strdup(unmatched[i].c_str());
+    }
     forward_argv[forward_argc] = nullptr;
 
     if (result.count("run-tests"))
@@ -236,7 +244,7 @@ int main(int argc, char **argv)
     // Exception handling?
     // TODO: make timeout configurable, used 15 seconds as a reasonable default as "every problem has a solution that
     // completes in at most 15 seconds on ten-year-old hardware."
-    const std::chrono::seconds timeout = 15s;
+    const std::chrono::milliseconds timeout = 15s;
     if (!run_solution(solve_fn, forward_argc, forward_argv, timeout))
     {
         std::cerr << "Solution timed out after " << timeout.count() << " seconds\n";
@@ -244,7 +252,7 @@ int main(int argc, char **argv)
     }
     const std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     const std::chrono::steady_clock::duration duration = end - start;
-    std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(duration) << '\n';
+    std::cout << "Finished in " << duration << '\n';
 
     return EXIT_SUCCESS;
 }
