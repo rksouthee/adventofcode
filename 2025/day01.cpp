@@ -84,6 +84,10 @@ S64 part_two(const std::vector<Rotation> &rotations)
 }
 } // namespace
 
+TEST_CASE("2025 Day 01 Part One")
+{
+}
+
 SOLVE
 {
     const std::vector<Rotation> rotations = read_input(std::cin);
