@@ -1,5 +1,7 @@
 #include "aoc.h"
 
+#include <numeric>
+
 namespace
 {
 std::vector<std::string> read_input(std::istream &is)
@@ -15,44 +17,24 @@ std::vector<std::string> read_input(std::istream &is)
     return lines;
 }
 
-S64 largest_potential(const S64 voltage, const S64 digits)
+S64 largest_voltage_for_bank(const std::string_view bank, S64 digits)
 {
-    S64 result = voltage;
-    for (S64 i = 0; i < digits; ++i)
+    S64 length = std::ssize(bank);
+    assert(length >= digits);
+    auto first = bank.data();
+    auto last = first + (length - digits + 1);
+    S64 result = 0;
+    while (digits > 0)
     {
-        result = result * 10 + 9;
+        assert(first != last);
+        auto max_it = std::max_element(first, last);
+        result = result * 10 + (*max_it - '0');
+        first = max_it + 1;
+        length = std::ssize(bank) - (first - bank.data());
+        --digits;
+        last = first + (length - digits + 1);
     }
     return result;
-}
-
-S64 largest_voltage_for_bank(const std::string_view bank, S64 largest, const S64 voltage, const S64 start, const S64 remaining)
-{
-    if (remaining == 0)
-    {
-        return voltage;
-    }
-
-    if (start >= std::ssize(bank) || std::ssize(bank) - start < remaining)
-    {
-        return 0;
-    }
-
-    if (largest_potential(voltage, remaining) <= largest)
-    {
-        return 0;
-    }
-
-    for (S64 i = start; i < std::ssize(bank); ++i)
-    {
-        const S64 new_voltage = voltage * 10 + (bank[i] - '0');
-        largest = std::max(largest, largest_voltage_for_bank(bank, largest, new_voltage, i + 1, remaining - 1));
-    }
-    return largest;
-}
-
-S64 largest_voltage_for_bank(const std::string_view bank, const S64 digits)
-{
-    return largest_voltage_for_bank(bank, 0, 0, 0, digits);
 }
 
 S64 sum_voltages(const std::vector<std::string> &banks, const S64 digits)
@@ -78,10 +60,20 @@ S64 part_two(const std::vector<std::string> &banks)
 
 TEST_CASE("2025 Day 03 Part One")
 {
-    REQUIRE(largest_voltage_for_bank("123", 2) == 23);
-    REQUIRE(largest_voltage_for_bank("303", 4) == 0);
-    REQUIRE(largest_voltage_for_bank("1001", 3) == 101);
-    REQUIRE(largest_voltage_for_bank("909", 2) == 99);
+    const S64 digits = 2;
+    REQUIRE(largest_voltage_for_bank("987654321111111", digits) == 98);
+    REQUIRE(largest_voltage_for_bank("811111111111119", digits) == 89);
+    REQUIRE(largest_voltage_for_bank("234234234234278", digits) == 78);
+    REQUIRE(largest_voltage_for_bank("818181911112111", digits) == 92);
+}
+
+TEST_CASE("2025 Day 03 Part Two")
+{
+    const S64 digits = 12;
+    REQUIRE(largest_voltage_for_bank("987654321111111", digits) == 987654321111);
+    REQUIRE(largest_voltage_for_bank("811111111111119", digits) == 811111111119);
+    REQUIRE(largest_voltage_for_bank("234234234234278", digits) == 434234234278);
+    REQUIRE(largest_voltage_for_bank("818181911112111", digits) == 888911112111);
 }
 
 SOLVE
