@@ -1,7 +1,5 @@
 #include "aoc.h"
 
-#include <numeric>
-
 namespace
 {
 std::vector<std::string> read_input(std::istream &is)
@@ -27,6 +25,14 @@ S64 largest_voltage_for_bank(const std::string_view bank, S64 digits)
     while (digits > 0)
     {
         assert(first != last);
+        if (length == digits)
+        {
+            for (S64 i = 0; i < digits; ++i)
+            {
+                result = result * 10 + (first[i] - '0');
+            }
+            return result;
+        }
         auto max_it = std::max_element(first, last);
         result = result * 10 + (*max_it - '0');
         first = max_it + 1;
