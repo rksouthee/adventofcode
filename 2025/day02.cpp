@@ -51,11 +51,9 @@ template <typename P> S64 count_invalid_ids(const std::string_view range, const 
     for (S64 id = lo; id <= hi; ++id)
     {
         const std::string id_str = std::to_string(id);
-        //const S64 len = std::ssize(id_str);
         if (!p(id_str))
-        //if (len % k == 0 && !p(id_str, len / k))
         {
-            //std::clog << "Invalid ID: " << id << '\n';
+            AOC_LOG("Invalid ID: " << id);
             sum += id;
         }
     }
