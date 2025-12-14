@@ -25,10 +25,12 @@ using namespace std::chrono_literals;
 
 namespace
 {
-std::size_t write_data(const void *const ptr, const std::size_t size, const std::size_t count, void *stream)
+std::size_t write_data(const void *const ptr, const std::size_t, const std::size_t count, void *stream)
 {
-    const std::size_t written = std::fwrite(ptr, size, count, static_cast<std::FILE *>(stream));
-    return written;
+    std::string &data = *static_cast<std::string *>(stream);
+    const char *const char_ptr = static_cast<const char *>(ptr);
+    data.insert(data.size(), char_ptr, count);
+    return count;
 }
 
 bool download_data(const std::string &year, const std::string &day, const std::filesystem::path &path,
@@ -44,13 +46,41 @@ bool download_data(const std::string &year, const std::string &day, const std::f
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
     curl_easy_setopt(curl, CURLOPT_COOKIE, cookie.c_str());
-    if (std::FILE * file; _wfopen_s(&file, path.c_str(), L"wb") == 0 && file)
+    std::string response_data;
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_data);
+    const CURLcode result = curl_easy_perform(curl);
+    bool success = false;
+    if (result == CURLE_OK)
     {
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
-        const CURLcode result = curl_easy_perform(curl);
-        return std::fclose(file) == 0 && result == 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &result);
+        if (result == 200)
+        {
+            std::ofstream file(path);
+            if (file)
+            {
+                file << response_data;
+                file.flush();
+                success = file.good();
+                file.close();
+            }
+            else
+            {
+                std::cerr << "Failed to open " << path << " for writing\n";
+            }
+        }
+        else
+        {
+            std::cerr << "Unexpected HTTP response code: " << result << '\n';
+            std::cerr << "Response data:\n" << response_data << '\n';
+        }
     }
-    return false;
+    else
+    {
+        std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(result) << '\n';
+    }
+
+    curl_easy_cleanup(curl);
+    return success;
 }
 
 template <typename T> T get_proc_address(const HMODULE module, const char *const proc_name)
